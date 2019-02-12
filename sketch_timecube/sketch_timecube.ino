@@ -1,65 +1,39 @@
-#include <WiFi.h> //Wifi library
-#include "esp_wpa2.h" //wpa2 library for connections to Enterprise networks
+#include <WiFi.h>
+#include "esp_wpa2.h"
 
-#include <Adafruit_LIS3DH2.h>
+#include "accelerator.h"
+#include "config.h"
 
-#define WLAN_EAP_IDENTITY "uj66ojab@fau.de"
-#define WLAN_EAP_PASSWORD "XXX"
-#define WLAN_EAP_ANONYMOUS_IDENTITY "anonymous@fau.de"
-const char* wlan_ssid = "eduroam";
+const char* wlan_ssid = WLAN_SSID;
+const char* sync_http_host = SYNC_HTTP_HOST;
 
-#define WLAN_RECONNECT_DELAY 500
-#define WLAN_RECONNECT_TRIES 60
-const char* http_host = "i4time.cs.fau.de";
-
-#define SYNC_INTERVAL (3600*4)
-RTC_DATA_ATTR time_t wakeup = SYNC_INTERVAL;
-
-#define SIDE_COUNT 10
-#define SIDE_SLEEP 400
-const uint8_t side_translate[6] = {1, 6, 4, 3, 2, 5 };
+const uint8_t side_translate[6] = SIDE_MAPPING;
 RTC_DATA_ATTR uint8_t side_last = 0;
-
-#define TIMELOG_MAX 192
 RTC_DATA_ATTR uint8_t timelog_entry = 0;
 RTC_DATA_ATTR time_t timelog[TIMELOG_MAX];
-
-static_assert(sizeof(time_t) == 4, "time_t Size");
-
-Adafruit_LIS3DH2 accel = Adafruit_LIS3DH2(21);
-#define ACCEL_CLICK_THS 80
-#define ACCEL_INT_PIN GPIO_NUM_27
-#define ACCEL_INT_MASK (1 << 27)
-
-#define RTC_TIMESTAMP_THS 1000000000
-
-#define STATUS_LED_PIN GPIO_NUM_13
-
+RTC_DATA_ATTR time_t wakeup = SYNC_INTERVAL;
 RTC_DATA_ATTR unsigned deep_sleep = 0;
 RTC_DATA_ATTR unsigned sync_counter = 0;
 
-static uint8_t getVoltage(){
-  /* Min/Max Voltage = 3.2V/4.2V
-   * Formula for ADC value:
-   *    Voltage/(7.26V)*4095
-   * -> ADC 1800/2375
-   */
-  const int max = 2375; // 100%
-  const int min = 1800; //   0%
+static_assert(sizeof(time_t) == 4, "time_t Size");
 
+Accelerator accel = Accelerator(ACCEL_INT_PIN);
+
+
+static uint8_t getVoltage(){
   int val = analogRead(A13);
   Serial.print("Batterie: ");
   Serial.println(val);
-  if (val > max)
+  if (val > BATTERY_MAX)
     return 100;
-  else if (val < min)
+  else if (val < BATTERY_MIN)
     return 0;
   else 
-    return (val - min) * 100 / (max - min);
+    return (val - BATTERY_MIN) * 100 / (BATTERY_MAX - BATTERY_MIN);
 }
 
 static uint8_t getSide(){
-  uint8_t state = accel.getMovementInt();
+  uint8_t state = accel.getMovement();
   for (uint8_t p = 0; p < 6; p++){
     if ((state & 0x3f) == (1 << p))
       return side_translate[p];
@@ -74,13 +48,13 @@ static uint8_t getStableSide(){
   if (side != side_last) {
     side_last = side;
     // try to save power during sleep
-    esp_sleep_enable_timer_wakeup(SIDE_SLEEP * 1000);
+    esp_sleep_enable_timer_wakeup(SIDE_DELAY * 1000);
     // we need SIDE_COUNT stable reads
     for (uint8_t n = 0 ; n < SIDE_COUNT ; n++){
       // try light sleep, fall back to delay
       if (esp_light_sleep_start() != ESP_OK){
         Serial.println("delay");
-        delay(SIDE_SLEEP);
+        delay(SIDE_DELAY);
       }
       // Update Side
       side = getSide();
@@ -191,14 +165,14 @@ static bool uploadData(){
   
     // Server kontaktieren
     Serial.print("Senden an ");
-    Serial.println(http_host);
+    Serial.println(sync_http_host);
     WiFiClient client;
-    if (client.connect(http_host, 80)) {
+    if (client.connect(sync_http_host, 80)) {
       client.print("POST /");
       client.printf("%04X",(uint16_t)(mac>>32));
       client.printf("%08X",(uint32_t)mac);
       client.print("/upload HTTP/1.1\r\nHost: ");
-      client.print(http_host);
+      client.print(sync_http_host);
       client.print("\r\nUser-Agent: i4Zeitwuerfel\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ");
       client.print(timelog_entry == 0 ? 15 : (17 + (timelog_entry - 1) * 9));
       client.print("\r\n\r\n");
@@ -271,9 +245,8 @@ void setup(){
   if (!accel.begin()){
     Serial.println("Beschleunigungssensor spinnt.");
   } else {
-    accel.setRange(LIS3DH_RANGE_2_G);
     accel.setClick(3, ACCEL_CLICK_THS);
-    accel.setMovementInt();
+    accel.setMovement();
   }
 
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
@@ -325,7 +298,7 @@ void setup(){
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
   gpio_pullup_dis(ACCEL_INT_PIN);
   gpio_pulldown_en(ACCEL_INT_PIN);
-  esp_sleep_enable_ext1_wakeup(ACCEL_INT_MASK,ESP_EXT1_WAKEUP_ANY_HIGH);
+  esp_sleep_enable_ext1_wakeup(1 << ACCEL_INT_PIN, ESP_EXT1_WAKEUP_ANY_HIGH);
   // calculate next wakeup
   if (wakeup - now < 1) 
     wakeup = now + 1;
