@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Zeiterfassungswürfel - Übersicht</title>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link href="https://fonts.googleapis.com/css?family=Titillium+Web:400,600,700" rel="stylesheet">
+
+	<link rel="stylesheet" href="/styles.css">
+
+</head>
+
+<body>
+
+
+	<div id="wrapper">
+
+		<div class="content-area">
+			<div class="container-fluid">
+				<div class="main">
+					<!-- Header row -->
+					<div class="row mt-4 mb-4">
+							<div id="header"></div>
+					</div>
+					<div class="row headerline mt-4 mb-4">
+						<div class="col-md-4">
+							<div class="box">
+								<div><b>Informationen</b></div>
+								<div id="information"></div>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="box">
+								<div>Derzeitiger Batteriestatus</div>
+								<div id="voltage"></div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Bar and Heatmap Graphs -->
+					<div class="row mt-3 mb-4">
+						<div class="col-md-6">
+							<div class="tab">
+								<button class="bar_tablinks" onclick="openBar(event, 'week')" id="bar_default">Letzte 7 Tage</button>
+								<button class="bar_tablinks" onclick="openBar(event, 'month')">Letzte 30 Tage</button>
+								<button class="bar_tablinks" onclick="openBar(event, 'thisyear')">Dieses Jahr</button>
+								<div class="box">
+									<div id="bar_week" class="bar_tabcontent"> </div>
+									<div id="bar_month" class="bar_tabcontent"> </div>
+									<div id="bar_thisyear" class="bar_tabcontent"></div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="tab">
+								<button class="heat_tablinks" onclick="openHeatmap(event, 'week')" id="heat_default">Letzte 7 Tage</button>
+								<button class="heat_tablinks" onclick="openHeatmap(event, 'month')">Letzte 30 Tage</button>
+								<div class="box">
+									<div id="heat_week" class="heat_tabcontent"> </div>
+									<div id="heat_month" class="heat_tabcontent">Hier könnte Ihr Graph stehen!</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Pie Chart -->
+					<div class="row mt-3 mb-4">
+						<div class="col">
+							<div class="box">
+								<div id="pie1"> </div>
+							</div>
+						</div>
+						<div class="col">
+							<div class="box">
+								<div id="pie2"> </div>
+							</div>
+						</div>
+						<div class="col">
+							<div class="box">
+								<div id="pie3"> </div>
+							</div>
+						</div>
+						<div class="col">
+							<div class="box">
+								<div id="pie4"> </div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<div class="box">
+								<div id="pie5"> </div>
+							</div>
+						</div>
+						<div class="col">
+							<div class="box">
+								<div id="pie6"> </div>
+							</div>
+						</div>
+						<div class="col">
+							<div class="box">
+								<div id="pie7"> </div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.slim.min.js"></script>
+	<script src="/apexcharts.js"></script>
+
+	<script src="data.js"></script>
+	<script src="/functions.js"></script>
+	<script src="/renderGraphs.js"></script>
+
+	<script>
+	// Header
+	if (data.name == "") {
+		data.name = "Unbekannt";
+	}
+	document.getElementById("header").innerHTML =
+		"<h1>Zeiterfassungswürfel von " + data.name + "</h1>";
+
+	// Informations
+	document.getElementById("information").innerHTML =
+		"Letztes Update: " + lastUpdate(data);
+
+	// Voltage
+	renderVoltage(data, "voltage", );
+
+	// Bar Chart: default last week
+	// Pre-render graphs
+	renderBar(data, "bar_week", "week");
+	renderBar(data, "bar_month", "month");
+	renderBar(data, "bar_thisyear", "thisyear");
+
+
+	document.getElementById("bar_default").click();
+	function openBar(event, option) {
+		var tabcontent, tablinks;
+		var tabcontent = document.getElementsByClassName("bar_tabcontent");
+		for (var i = 0; i < tabcontent.length; i++) {
+			tabcontent[i].style.display = "none";
+		}
+		tablinks = document.getElementsByClassName("bar_tablinks");
+		for (var i = 0; i < tablinks.length; i++) {
+			tablinks[i].className = tablinks[i].className.replace(" active", "");
+		}
+		document.getElementById("bar_" + option).style.display = "block";
+
+		event.currentTarget.className += " active";
+
+	}
+
+	// Heatmap: default last week
+	// Pre-render graphs
+	renderHeatmap(data, "heat_week", "week");
+	renderHeatmap(data, "head_month", "month");
+
+	document.getElementById("heat_default").click();
+	function openHeatmap(event, option) {
+		var tabcontent, tablinks;
+		var tabcontent = document.getElementsByClassName("heat_tabcontent");
+		for (var i = 0; i < tabcontent.length; i++) {
+			tabcontent[i].style.display = "none";
+		}
+		tablinks = document.getElementsByClassName("heat_tablinks");
+		for (var i = 0; i < tablinks.length; i++) {
+			tablinks[i].className = tablinks[i].className.replace(" active", "");
+		}
+		document.getElementById("heat_" + option).style.display = "block";
+
+		event.currentTarget.className += " active";
+
+	}
+
+	// Pie Charts
+	renderPie(data, "pie", 300);
+	</script>
+</body>
+
+</html>
+

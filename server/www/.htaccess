@@ -1,0 +1,16 @@
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+
+	# rewrite name to name/ (workaround for broken include)
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^([^/]*)$ /$1/ [R=302,L,QSA]
+
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^([A-Fa-f0-9]{12})/?(.*)$ index.php?mac=$1&alias=$1&site=$2 [L,QSA]
+
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^([^/]*)/?(.*)$ index.php?alias=$1&site=$2 [L,QSA]
+</IfModule>
