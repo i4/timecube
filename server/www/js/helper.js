@@ -58,7 +58,8 @@ function pie_accumulateLastWeek(data) {
 										   + "."  + curDay.getFullYear()
 										 ,
 			labels : labels,
-			data : values
+			data : values,
+			color : colors[i],
 			});
 
 		curDay.setDate(curDay.getDate() + 1);
@@ -145,6 +146,73 @@ function lastUpdate(data) {
 				
 }
 
+function column_accumulateDaysLabel(from, until){
+	var curDay = new Date(from);
+	curDay.setHours(12,0,0,0);
+
+	var untilDay = new Date(until);
+	untilDay.setHours(23, 59, 59, 999);
+
+	var dataArray = []
+	for (var day = 0; curDay < untilDay; day++) { 
+		dataArray.push(curDay.toISOString().substr(0,10));
+		curDay.setDate(curDay.getDate() + 1);
+	}
+	return {
+			type: 'datetime',
+			categories: dataArray,
+		};
+}
+
+function column_accumulateDays(data, from, until) {
+	var result = [];
+
+	var untilDay = new Date(until);
+	untilDay.setHours(23, 59, 59, 999);
+
+	for (var i=0; i<data.series.length; i++) {
+		if (data.series[i].hide) {
+			continue;
+		}
+		
+		var curDay = new Date(from);
+		curDay.setHours(0,0,0,0);
+
+		var dataArray = [];
+		for (var day = 0; curDay < untilDay; day++) {
+			// calculate start and end time
+			start = Math.floor(curDay.getTime() / 1000);
+
+			curDay.setDate(curDay.getDate() + 1);
+			end = Math.floor(curDay.getTime() / 1000);
+
+			dataArray.push(accumulateSeries(data.series[i], start, end));
+		}
+		
+		result.push(
+			{
+				name: data.series[i].task,
+				data: dataArray,
+				color : colors[i]
+			}
+		);
+	}
+
+	return result;
+}
+
+function accumulateSeries(series, start, end){
+	var sum = 0;
+	for (var j=0; j<series.data.length; j++) {
+		var entry = series.data[j];
+		if (start <= entry[1] && end >= entry[0]){
+			sum += Math.min(entry[1], end) - Math.max(entry[0], start)
+		}
+	}
+	// We want the result in hours, not seconds
+	return Math.round((sum / 3600) * 100)/100;
+}
+
 function accumulateRange(data, start, end) {
 	var result = [];
 
@@ -153,28 +221,14 @@ function accumulateRange(data, start, end) {
 			continue;
 		}
 
-		var sum = 0;
-		for (var j=0; j<data.series[i].data.length; j++) {
-			var entry = data.series[i].data[j];
-			// entry completely in range
-			if (entry[0] >= start && entry[1] <= end) {
-				sum += entry[1] - entry[0];
-			} // entry at the beginning of range
-			else if (entry[0] <= start && entry[1] >= start) {
-				sum += entry[1] - start;
-			} // entry at the end of range
-			else if (entry[0] <= end && entry[1] >= end) {
-				sum += end - entry[0];
-			}
-		}
-
-		result.push({
+		result.push(
+			{
 					x: data.series[i].task,
-					// We want the result in hours, not seconds
-					y: Math.round((sum / 3600) * 100)/100
-					});
+					y: accumulateSeries(data.series[i], start, end)
+			}
+		);
 	}
-	result.sort(function(a,b) { return b.y - a.y} );
+	//result.sort(function(a,b) { return b.y - a.y} );
 
 	return result;
 }
@@ -187,6 +241,27 @@ function formatPercent(val) {
 function formatHourShort(val) {
 	return Math.round(val)+"h";
 }
+
+function formatHourLabel(val, opts) {
+	var hours = 0;
+	if (typeof opts.w.globals.series[opts.seriesIndex] == 'number')
+		hours = Math.round(opts.w.globals.series[opts.seriesIndex]);
+	else if (typeof opts.w.globals.series[opts.seriesIndex] === 'object')
+		var hours = Math.round(opts.w.globals.series[opts.seriesIndex].reduce((a, b) => {
+		return a + b
+	}, 0));
+	if (hours == 0)
+		return val;
+	else
+		return val + " (" + hours + "h)"
+}
+
+function renderChart(elementId, options){
+	var chart = new ApexCharts(document.getElementById(elementId), options);
+	chart.render();
+	return chart;
+}
+
 
 function formatTotalHourShort(w) {
 	return Math.round(w.globals.seriesTotals.reduce((a, b) => {

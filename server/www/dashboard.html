@@ -35,10 +35,10 @@
 								<div id="voltage"></div>
 							</div>
 						</div>
-						<div class="col-md-4">
+						<div class="col-md-8">
 							<div class="box">
 								<div>Derzeitiger Batteriestatus</div>
-
+								<div id="foo"></div>
 							</div>
 						</div>
 					</div>
@@ -131,6 +131,8 @@
 	// Informations
 	document.getElementById("information").innerHTML = lastUpdate(data);
 
+
+renderChart("foo", generateDayTimeBar(data, "2019-04-01", "2019-05-03"));
 	// Voltage
 	renderVoltage(data, "voltage", );
 
@@ -139,7 +141,6 @@
 	renderBar(data, "bar_week", "week");
 	renderBar(data, "bar_month", "month");
 	renderBar(data, "bar_thisyear", "thisyear");
-
 
 	document.getElementById("bar_default").click();
 	function openBar(event, option) {
@@ -181,7 +182,9 @@
 	}
 
 	// Pie Charts
-	renderPie(data, "pie", 300);
+	//renderPie(data, "pie", 300);
+	renderChart("pie1", generatePie(data, "2019-05-01", "2019-05-02"));
+	renderChart("pie2", generatePie(data, "2019-05-02", "2019-05-03"));
 	</script>
 </body>
 
