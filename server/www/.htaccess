@@ -1,6 +1,9 @@
 <IfModule mod_rewrite.c>
 	RewriteEngine on
 
+	# disallow  config
+	RewriteRule /?config.php$ - [F,L]
+
 	# rewrite name to name/ (workaround for broken include)
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d

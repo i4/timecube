@@ -1,5 +1,5 @@
 <?php
-require_once('config.php');
+require_once('../config.php');
 
 function exception_error_handler($severity, $message, $file, $line) {
     if (!(error_reporting() & $severity)) {
@@ -63,8 +63,6 @@ if (!empty($_REQUEST['mac'])){
 if (empty($mac)){
 	status('Keine valide Benutzerkennung');
 }
-
-
 
 switch ($site){
 	case 'data.js':
