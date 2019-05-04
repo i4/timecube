@@ -137,7 +137,7 @@ function renderBar(data, graph, option) {
 }
 
 function renderHeatmap(data, graph, option) {
-	var colors = ["#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0"];
+	var colors = ["#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0", "#00D9E9"];
 	colors.reverse();
 
 	if (option == "week") {
@@ -179,28 +179,65 @@ function renderHeatmap(data, graph, option) {
 }
 
 function renderPie(data, graph_prefix, width=300) {
+	var colors = ["#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0", "#00D9E9"];
+
 	var dataAcc = pie_accumulateLastWeek(data);
 
 	console.log(dataAcc);
 
-	for (var i=0; i<7; i++) {	
-	    var options = {
-	        chart: {
-	            width: width,
-	            type: 'pie',
-	        },
+	for (var i=0; i<7; i++) {
+		var options = {
+			plotOptions: {
+				pie: {
+					donut: {
+						labels: {
+							show: true,
+							name: {
+								show:true,
+							},
+							value: {
+								show:true,
+								formatter: formatHourShort,
+							},
+							total : { 
+								show:true,
+								formatter: formatTotalHourShort,
+							}
+						}
+					}
+				}
+			},
+			chart: {
+				width: width,
+				type: 'donut',
+			},
+			fill: {
+				type: 'gradient',
+			},
+			name : {
+				show: true,
+			},
+			colors: colors,
 			labels : dataAcc[i].labels,
 			series : dataAcc[i].data,
 			title : {
 				text : dataAcc[i].day,
-				align : "left"
+				align : "left",
 			},
-	    }
-	
-	    var chart = new ApexCharts(
-	        document.querySelector("#" + graph_prefix + (7-i)),
-	        options
-	    );
+			yaxis: {
+				labels: {
+					formatter: formatHour,
+				},
+			},
+			dataLabels: {
+				enabled: true,
+				formatter: formatPercent,
+			},
+		}
+		var chart = new ApexCharts(
+			document.querySelector("#" + graph_prefix + (7-i)),
+			options
+		);
 	
 		chart.render()
 	}

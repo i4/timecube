@@ -30,14 +30,15 @@
 					<div class="row headerline mt-4 mb-4">
 						<div class="col-md-4">
 							<div class="box">
-								<div><b>Informationen</b></div>
+								<div><b>Letzte Aktualisierung</b></div>
 								<div id="information"></div>
+								<div id="voltage"></div>
 							</div>
 						</div>
 						<div class="col-md-4">
 							<div class="box">
 								<div>Derzeitiger Batteriestatus</div>
-								<div id="voltage"></div>
+
 							</div>
 						</div>
 					</div>
@@ -114,7 +115,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script src="js/apexcharts.min.js"></script>
 
-	<script src="http://i4time.cs.fau.de/laura/data.js"></script>
+	<script src="http://i4time.cs.fau.de/schumi/data.js"></script>
 	<script src="js/helper.js"></script>
 	<script src="js/render.js"></script>
 	<script src="js/locale.js"></script>
@@ -128,8 +129,7 @@
 		"<h1>Zeiterfassungswürfel von " + data.name + "</h1>";
 
 	// Informations
-	document.getElementById("information").innerHTML =
-		"Letztes Update: " + lastUpdate(data);
+	document.getElementById("information").innerHTML = lastUpdate(data);
 
 	// Voltage
 	renderVoltage(data, "voltage", );

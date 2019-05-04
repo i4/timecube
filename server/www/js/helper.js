@@ -1,3 +1,6 @@
+var monthName = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September', 'Oktober','November','Dezember'];
+var weekdayName = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+
 function accumulateLastWeek(data) {
 	var endweek = Math.floor(new Date().getTime() / 1000);
 	var startweek = new Date();
@@ -135,8 +138,8 @@ function lastUpdate(data) {
 	var idx = newestUpdateIdx(data);
 	// Date wants milliseconds
 	var date = new Date(data.connection[idx].time * 1000);
-	return weekday(date.getDay()) + ", " + date.getDate() + "."
-				+ date.getMonth() + "." + date.getFullYear() + " "
+	return weekdayName[date.getDay()] + ", den " + date.getDate() + ". "
+				+ monthName[date.getMonth()] + " " + date.getFullYear() + " um "
 				+ date.getHours() + ":" + date.getMinutes() + ":"
 				+ date.getSeconds() + " Uhr";
 				
@@ -174,5 +177,31 @@ function accumulateRange(data, start, end) {
 	result.sort(function(a,b) { return b.y - a.y} );
 
 	return result;
+}
+
+
+function formatPercent(val) {
+	return Math.round(val) + "%";
+}
+
+function formatHourShort(val) {
+	return Math.round(val)+"h";
+}
+
+function formatTotalHourShort(w) {
+	return Math.round(w.globals.seriesTotals.reduce((a, b) => {
+		return a + b
+	}, 0)) + "h";
+}
+
+function formatHour(val) {
+	var rounded = Math.round(val * 4);
+	var quart = ["", "¼", "½", "¾" ];
+	if (rounded == 4)
+		return "eine Stunde";
+	else if (rounded == 0 || rounded > 4)
+		return Math.floor(rounded/4) + quart[rounded % 4] + " Stunden";
+	else
+		return quart[rounded % 4] + " Stunde";
 }
 
