@@ -10,7 +10,6 @@
 	<link rel="stylesheet" href="css/bootstrap.min.css">
 	<link rel="stylesheet" href="fontawesome/css/fontawesome.min.css">
 	<link rel="stylesheet" href="css/apexcharts.css">
-	<link href="https://fonts.googleapis.com/css?family=Titillium+Web:400,600,700" rel="stylesheet">
 	<link rel="stylesheet" href="css/dashboard.css">
 
 </head>
@@ -32,7 +31,8 @@
 							<div class="box">
 								<div><b>Letzte Aktualisierung</b></div>
 								<div id="information"></div>
-								<div id="voltage"></div>
+								<div class="inline" id="voltage"></div>
+								<div class="inline" id="voltagehist"></div>
 							</div>
 						</div>
 						<div class="col-md-8">
@@ -42,7 +42,32 @@
 							</div>
 						</div>
 					</div>
-
+					<div class="row mt-3 mb-4">
+						<div class="col-md-6">
+							<div class="box">
+								<ul class="nav nav-tabs tabable" id="myTab" role="tablist">
+									<li class="nav-item"><a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Gestern</a></li>
+									<li class="nav-item"><a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Diese</a></li>
+									<li class="nav-item"><a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Contact</a></li>
+									  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Action</a>
+      <a class="dropdown-item" href="#">Another action</a>
+      <a class="dropdown-item" href="#">Something else here</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="#">Separated link</a>
+    </div>
+  </li>
+								</ul>
+								<div class="tab-content" id="myTabContent">
+									<div class="tab-pane  show active" id="home" role="tabpanel" aria-labelledby="home-tab">home</div>
+									<div class="tab-pane " id="profile" role="tabpanel" aria-labelledby="profile-tab"></div>
+									<div class="tab-pane " id="contact" role="tabpanel" aria-labelledby="contact-tab">contact</div>
+								</div>
+							</div>
+						</div>
+					</div>
 					<!-- Bar and Heatmap Graphs -->
 					<div class="row mt-3 mb-4">
 						<div class="col-md-6">
@@ -71,12 +96,13 @@
 
 					<!-- Pie Chart -->
 					<div class="row">
-						<div class="col">
+						<div class="col-md-12">
 							<div class="box">
-								<div id="pie1"> </div>
-								<div id="pie2"> </div>
+								<div id="full"></div>
 							</div>
 						</div>
+					</div>
+					<div class="row">
 						<div class="col">
 							<div class="box">
 								<div id="pie3"> </div>
@@ -112,13 +138,14 @@
 		</div>
 	</div>
 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="js/jquery.min.js"></script>
 	<script src="js/apexcharts.min.js"></script>
-
-	<script src="http://i4time.cs.fau.de/schumi/data.js"></script>
+	<script src="js/bootstrap.bundle.min.js"></script>
+	<script src="data.js"></script>
 	<script src="js/helper.js"></script>
 	<script src="js/render.js"></script>
 	<script src="js/locale.js"></script>
+
 
 	<script>
 	// Header
@@ -133,6 +160,8 @@
 
 
 renderChart("foo", generateDayTimeBar(data, "2019-04-01", "2019-05-03"));
+renderChart("voltagehist", generateVoltageLine(data, "2019-04-01"));
+
 	// Voltage
 	renderVoltage(data, "voltage", );
 
@@ -180,11 +209,33 @@ renderChart("foo", generateDayTimeBar(data, "2019-04-01", "2019-05-03"));
 		event.currentTarget.className += " active";
 
 	}
-
+renderChart("full",generateYearHeatmap(data));
 	// Pie Charts
 	//renderPie(data, "pie", 300);
-	renderChart("pie1", generatePie(data, "2019-05-01", "2019-05-02"));
-	renderChart("pie2", generatePie(data, "2019-05-02", "2019-05-03"));
+	renderChart("home", generatePie(data, "2019-04-01", "2019-05-02"));
+
+
+	// Use Tabs
+	$('.tabable a').on('click', function (e) {
+		e.preventDefault();
+		$(this).tab('show');
+	})
+
+
+	renderChartLazy("profile", function(){ return generatePie(data, "2019-05-02", "2019-05-03"); });
+
+	$('a[data-toggle="tab"]').on('hide.bs.tab', function (e) {
+		var obj = $(e.target.hash);
+		if (obj[0].chart !== undefined)
+			obj[0].chart.destroy();
+		obj[0].style.display="none";
+	})
+	
+	$('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+		var obj = $(e.target.hash);
+		obj[0].style.display="block";
+		obj.trigger("chart", [ obj ]);
+	})
 	</script>
 </body>
 

@@ -257,9 +257,22 @@ function formatHourLabel(val, opts) {
 }
 
 function renderChart(elementId, options){
-	var chart = new ApexCharts(document.getElementById(elementId), options);
-	chart.render();
-	return chart;
+	var element = document.getElementById(elementId);
+	if (element.chart === undefined)
+		element.chart = new ApexCharts(document.getElementById(elementId), options);
+	element.chart.render();
+	$(element).on("chart", function (e) {
+		element.chart.render();
+	});
+	return element.chart;
+}
+
+function renderChartLazy(elementId, optionCallback){
+	var element = document.getElementById(elementId)
+	$(element).on("chart", function (e) {
+		$(element).off("chart");
+		renderChart("profile", optionCallback());
+	});
 }
 
 
@@ -279,4 +292,12 @@ function formatHour(val) {
 	else
 		return quart[rounded % 4] + " Stunde";
 }
+
+Date.prototype.getWeekNumber = function(){
+	var d = new Date(Date.UTC(this.getFullYear(), this.getMonth(), this.getDate()));
+	var dayNum = d.getUTCDay() || 7;
+	d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+	var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+	return Math.ceil((((d - yearStart) / 86400000) + 1)/7)
+};
 

@@ -8,6 +8,7 @@ function renderVoltage(data, graph, size=200) {
     var voltageOptions = {
       chart: {
         height: size,
+        width: size,
         type: 'radialBar',
         toolbar: {
           show: false
@@ -180,7 +181,117 @@ function renderHeatmap(data, graph, option) {
     chart.render();
 }
 
+function generateYearHeatmap(data, limit = NaN){
+	var options = {
+		chart: {
+			height: 350,
+			type: 'heatmap',
+		},
+		dataLabels: {
+			enabled: false
+		},
+		colors: ["#008FFB"],
+		series: [],
+		title: {
+			text: 'HeatMap Chart (Single color)'
+		},
+		tooltip: {
+			y: {
+				formatter: formatHour,
+			},
+		}
+	};
 
+	var result = [];
+	var nowTime = Date.now();
+	var now = new Date(nowTime);
+	var start =  new Date(nowTime);
+	start.setHours(0,0,0,0);
+	start.setFullYear(start.getFullYear()-1);
+	var dayTime = 24*60*60*1000;
+	var days = Math.ceil((now.getTime() - startTime) / dayTime)
+
+	for (var i=0; i<data.series.length; i++) {
+		if (data.series[i].hide || (!isNaN(limit) && limit != data.series[i].side))
+			continue;
+		for (var j = 0; j<data.series[i].data.length;j++){
+			var e = data.series[i].data[j];
+			var t = new Date(e[1] * 1000);
+			if (t > startTime){
+				var f = new Date(Math.max(e[0] * 1000, start.getTime()));
+				while(1) {
+					var e = new Date(f.getFullYear(), f.getMonth(), f.getDate(), 23, 59, 59, 1000);
+					var d = Math.floor((nowTime - e.getTime()) / dayTime);
+					if (isNaN(result[d]))
+						result[d] = 0;
+					if (e > t){
+						result[d] += t.getTime() - f.getTime();
+						break;
+					} else {
+						result[d] += e.getTime() - f.getTime();
+						f = e;
+					}
+				}
+			}
+		}
+	}
+
+	for (var j=0; j < 7; j++) {
+		options.series[(12 - j) % 7] = {
+			name: weekdayName[j],
+			data: [],
+		};
+	}
+	for (var j=0; now > start; j++) {
+		options.series[6 - now.getDay()].data.push({ 
+			x: "KW" + now.getWeekNumber(start)+ " " +now.getFullYear(),
+			y: (isNaN(result[j]) ? 0 : Math.round((result[j] / 3600000) * 100)/100),
+		});
+		now.setDate(now.getDate() - 1);
+	}
+	
+	console.log(result);
+	return options;
+}
+
+function generateVoltageLine(data, since){
+	var options = {
+		chart: {
+			type: 'area',
+			width: 100,
+			height: 75,
+			sparkline: {
+				enabled: true
+			}
+		},
+		series: [{
+			name: "Batterie",
+			data: []
+		}],
+		xaxis: {
+			type: 'datetime',
+		},
+		tooltip: {
+			fixed: {
+				enabled: false
+			},
+			marker: {
+				show: false
+			},
+			x: {
+				format: 'd. MMMM yyyy, HH:mm',
+			},
+			y: {
+				formatter: formatPercent,
+			}
+		}
+	};
+	var sinceTime = new Date(since).getTime() / 1000;
+	for (var i=0; i<data.connection.length; i++)
+		if (data.connection[i].time >= sinceTime)
+			options.series[0].data.push([data.connection[i].time*1000,data.connection[i].voltage]);
+	return options;
+}
 function generateDayTimeBar(data, start, end, height=350) {
 
 	var options = {
@@ -234,6 +345,11 @@ function generateDayTimeBar(data, start, end, height=350) {
 			position: 'right',
 			formatter: formatHourLabel,
 		},
+		tooltip: {
+			x: {
+				format: 'd. MMMM yyyy, HH:mm',
+			},
+		}
 	}
 
 	var untilDay = new Date(end);
@@ -277,7 +393,7 @@ function generateDayTimeBar(data, start, end, height=350) {
 	return options;
 }
 
-function generatePie(data, start, end, width=400) {
+function generatePie(data, start, end, width=500) {
 	var options = {
 		plotOptions: {
 			pie: {
@@ -294,7 +410,7 @@ function generatePie(data, start, end, width=400) {
 						total : { 
 							show:true,
 							label: 'Gesamt',
-							color: '#000',
+							color: '#111',
 							formatter: formatTotalHourShort,
 						}
 					}
