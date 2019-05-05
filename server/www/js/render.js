@@ -1,6 +1,6 @@
 var colors = ["#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0", "#00D9E9"];
 	
-function renderVoltage(data, graph, size=200) {
+function renderVoltage(data, graph, size=190) {
 	
 	var idx = newestUpdateIdx(data);
 	var newestVoltage = data.connection[idx].voltage;
@@ -20,7 +20,7 @@ function renderVoltage(data, graph, size=200) {
           endAngle: 360,
            hollow: {
             margin: 0,
-            size: '70%',
+            size: '60%',
             background: '#fff',
             image: undefined,
             imageOffsetX: 0,
@@ -181,6 +181,145 @@ function renderHeatmap(data, graph, option) {
     chart.render();
 }
 
+function generateWorkCircle(data){
+	var options = {
+		chart: {
+			height: 350,
+			type: 'radialBar',
+		},
+		plotOptions: {
+			radialBar: {
+				offsetY: -10,
+				startAngle: 0,
+				endAngle: 270,
+				hollow: {
+					margin: 5,
+					size: '30%',
+					background: 'transparent',
+					image: undefined,
+				},
+				dataLabels: {
+					name: {
+						show: false,
+						
+					},
+					value: {
+						show: false,
+					}
+				}
+			}
+		},
+		colors: ['#0084ff', '#39539E', '#0077B5'],
+		series: [67,61,290],
+		labels: ['Jahr', 'Monat', 'Woche'],
+		legend: {
+			show: true,
+			floating: true,
+			fontSize: '16px',
+			position: 'left',
+			offsetX: 60,
+			offsetY: 10,
+			labels: {
+				useSeriesColors: true,
+			},
+			markers: {
+				size: 0
+			},
+			formatter: function(seriesName, opts) {
+				return seriesName + ": " + Math.round(opts.w.globals.series[opts.seriesIndex] / 90 * 100) + "%";
+			},
+			itemMargin: {
+				horizontal: 1,
+			}
+		},
+	};
+	var now = new Date();
+	console.log(getWorkingTimePercent(data, new Date(now.getFullYear(), 0, 1), new Date(now.getFullYear() + 1,0,1)));
+	
+	return options;
+}
+
+
+function generateWeekHeatmap(data, since, limit = NaN, hourStep = 2){
+	var options = {
+		chart: {
+			height: 350,
+			type: 'heatmap',
+		},
+		dataLabels: {
+			enabled: false
+		},
+		colors: ["#008FFB"], //todo: je nach limit
+		series: [],
+		title: {
+			text: 'HeatMap Chart (Single color)'
+		},
+		tooltip: {
+			y: {
+				formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+					return Math.round(value / w.globals.seriesTotals.reduce((a, b) => { return a + b }, 0) * 100) + "%";
+				}
+			},
+		},
+		yaxis: {
+			reversed: true,
+		}
+	};
+
+	var result = [];
+	var nowTime = Date.now();
+	var now = new Date(nowTime);
+	var start =  new Date(since);
+
+	for (var j=0; j < 24 / hourStep; j++) {
+		options.series[j] = {
+			name: (j * hourStep) + " Uhr",
+			data: [],
+		};
+		result[j] = [];
+		for (var i=0; i < 7; i++)
+			result[j][i]=0;
+	}
+
+	for (var i=0; i<data.series.length; i++) {
+		if (data.series[i].hide || (!isNaN(limit) && limit != data.series[i].side))
+			continue;
+		for (var j = 0; j<data.series[i].data.length;j++){
+			var e = data.series[i].data[j];
+			var t = new Date(e[1] * 1000);
+			if (t > start.getTime()){
+				var f = new Date(Math.max(e[0] * 1000, start.getTime()));
+				while(1) {
+					var slot = Math.floor(f.getHours() / hourStep);
+					var e = new Date(f.getFullYear(), f.getMonth(), f.getDate(), (slot + 1) * hourStep, 0, 0, 0);
+					var dow = f.getDay();
+					if (e > t){
+						result[slot][dow] += t.getTime() - f.getTime();
+						break;
+					} else {
+						result[slot][dow] += e.getTime() - f.getTime();
+						f = e;
+					}
+				}
+			}
+		}
+	}
+
+	for (var j=0; j < 24 / hourStep; j++) {
+		for (var i=0; i < 7; i++) {
+			var d = (1 + i) % 7;
+			options.series[j].data.push({ 
+				x: weekdayName[d],
+				y: (isNaN(result[j][d]) ? 0 : Math.round((result[j][d] / 3600000) * 100)/100),
+			});
+		}
+	}
+	
+	console.log(result);
+	return options;
+}
+
+
 function generateYearHeatmap(data, limit = NaN){
 	var options = {
 		chart: {
@@ -199,6 +338,9 @@ function generateYearHeatmap(data, limit = NaN){
 			y: {
 				formatter: formatHour,
 			},
+			x: {
+				show: true,
+			},
 		}
 	};
 
@@ -209,7 +351,7 @@ function generateYearHeatmap(data, limit = NaN){
 	start.setHours(0,0,0,0);
 	start.setFullYear(start.getFullYear()-1);
 	var dayTime = 24*60*60*1000;
-	var days = Math.ceil((now.getTime() - startTime) / dayTime)
+	var days = Math.ceil((now.getTime() - start.getTime()) / dayTime)
 
 	for (var i=0; i<data.series.length; i++) {
 		if (data.series[i].hide || (!isNaN(limit) && limit != data.series[i].side))
@@ -217,11 +359,11 @@ function generateYearHeatmap(data, limit = NaN){
 		for (var j = 0; j<data.series[i].data.length;j++){
 			var e = data.series[i].data[j];
 			var t = new Date(e[1] * 1000);
-			if (t > startTime){
+			if (t > start.getTime()){
 				var f = new Date(Math.max(e[0] * 1000, start.getTime()));
 				while(1) {
 					var e = new Date(f.getFullYear(), f.getMonth(), f.getDate(), 23, 59, 59, 1000);
-					var d = Math.floor((nowTime - e.getTime()) / dayTime);
+					var d = Math.floor((e.getTime() - start.getTime()) / dayTime);
 					if (isNaN(result[d]))
 						result[d] = 0;
 					if (e > t){
@@ -237,20 +379,19 @@ function generateYearHeatmap(data, limit = NaN){
 	}
 
 	for (var j=0; j < 7; j++) {
-		options.series[(12 - j) % 7] = {
+		options.series[(14 - j) % 7] = {
 			name: weekdayName[j],
 			data: [],
 		};
 	}
-	for (var j=0; now > start; j++) {
-		options.series[6 - now.getDay()].data.push({ 
-			x: "KW" + now.getWeekNumber(start)+ " " +now.getFullYear(),
+	for (var j=0; start < now; j++) {
+		options.series[(8 - start.getDay())%7].data.push({ 
+			x: "KW" + start.getWeekNumber()+ " " +start.getFullYear(),
 			y: (isNaN(result[j]) ? 0 : Math.round((result[j] / 3600000) * 100)/100),
 		});
-		now.setDate(now.getDate() - 1);
+		start.setDate(start.getDate() + 1);
 	}
-	
-	console.log(result);
+
 	return options;
 }
 
@@ -258,7 +399,7 @@ function generateVoltageLine(data, since){
 	var options = {
 		chart: {
 			type: 'area',
-			width: 100,
+			width: 200,
 			height: 75,
 			sparkline: {
 				enabled: true
@@ -272,9 +413,6 @@ function generateVoltageLine(data, since){
 			type: 'datetime',
 		},
 		tooltip: {
-			fixed: {
-				enabled: false
-			},
 			marker: {
 				show: false
 			},
@@ -347,7 +485,7 @@ function generateDayTimeBar(data, start, end, height=350) {
 		},
 		tooltip: {
 			x: {
-				format: 'd. MMMM yyyy, HH:mm',
+				format: 'd. MMMM yyyy',
 			},
 		}
 	}

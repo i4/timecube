@@ -1,5 +1,6 @@
 var monthName = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September', 'Oktober','November','Dezember'];
 var weekdayName = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+var holidays = [ "2019-01-01","2019-01-06","2019-04-19","2019-04-22","2019-05-01","2019-05-30","2019-06-10","2019-06-20","2019-10-03","2019-11-01","2019-12-25","2019-12-26"];
 
 function accumulateLastWeek(data) {
 	var endweek = Math.floor(new Date().getTime() / 1000);
@@ -291,6 +292,31 @@ function formatHour(val) {
 		return Math.floor(rounded/4) + quart[rounded % 4] + " Stunden";
 	else
 		return quart[rounded % 4] + " Stunde";
+}
+
+
+function getWorkDays(start, end){
+	var workDays = 0;
+	while (start < end){
+		if (start.getDay() != 0 && start.getDay() != 6 && !holidays.includes(start.toISOString().substr(0,10))) 
+			workDays++;
+		start.setDate(start.getDate() + 1);
+	}
+	return workDays;
+}
+
+
+function getWorkedHours(data, start, end){
+	var workHours = 0;
+	for (var i=0; i<data.series.length; i++) {
+		if (!data.series[i].hide)
+			workHours += accumulateSeries(data.series[i], start.getTime() / 1000, end.getTime() / 1000);
+	}
+	return workHours;
+}
+
+function getWorkingTimePercent(data, start, end, leave = 30){
+	return getWorkedHours(data, start, end) / ((getWorkDays(start, end) - leave) * 8.1);
 }
 
 Date.prototype.getWeekNumber = function(){

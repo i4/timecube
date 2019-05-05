@@ -68,6 +68,30 @@
 							</div>
 						</div>
 					</div>
+					<div class="row mt-3 mb-4">
+						<div class="col-md-6">
+							<div class="box">
+								<ul class="nav nav-tabs tabable" id="myTab" role="tablist">
+									<li class="nav-item dropdown">
+										<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Filter</a>
+										<div class="dropdown-menu">
+											<a class="dropdown-item" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Keiner</a>
+											<div class="dropdown-divider"></div>
+											<a class="dropdown-item" href="#">Another action</a>
+											<a class="dropdown-item" href="#">Something else here</a>
+											<a class="dropdown-item" href="#">Separated link</a>
+										</div>
+									</li>
+									<li><input type="range" class="custom-range" min="1" max="52" id="customRange1"></li>
+								</ul>
+								<div class="tab-content" id="myTabContent">
+									<div class="tab-pane  show active" id="home" role="tabpanel" aria-labelledby="home-tab">home</div>
+									<div class="tab-pane " id="profile" role="tabpanel" aria-labelledby="profile-tab"></div>
+									<div class="tab-pane " id="contact" role="tabpanel" aria-labelledby="contact-tab">contact</div>
+								</div>
+							</div>
+						</div>
+					</div>
 					<!-- Bar and Heatmap Graphs -->
 					<div class="row mt-3 mb-4">
 						<div class="col-md-6">
@@ -159,9 +183,10 @@
 	document.getElementById("information").innerHTML = lastUpdate(data);
 
 
-renderChart("foo", generateDayTimeBar(data, "2019-04-01", "2019-05-03"));
+renderChart("foo", generateDayTimeBar(data, "2019-02-01", "2019-05-03"));
 renderChart("voltagehist", generateVoltageLine(data, "2019-04-01"));
 
+renderChart("pie6", generateWorkCircle(data));
 	// Voltage
 	renderVoltage(data, "voltage", );
 
@@ -209,7 +234,10 @@ renderChart("voltagehist", generateVoltageLine(data, "2019-04-01"));
 		event.currentTarget.className += " active";
 
 	}
+	
+	// todo: dropdown mit limit auf seite, ggf eingabefeld fuer anzahl wochen bei weekheatmap
 renderChart("full",generateYearHeatmap(data));
+//renderChart("full",generateWeekHeatmap(data,"2019-03-28"));
 	// Pie Charts
 	//renderPie(data, "pie", 300);
 	renderChart("home", generatePie(data, "2019-04-01", "2019-05-02"));
