@@ -67,6 +67,10 @@ Batteriebetriebener [ESP32](https://www.espressif.com/en/products/hardware/esp32
 Revision 1
 ----------
 
-Wechsel auf [Firebeetle ESP32](https://www.dfrobot.com/product-1590.html) mit 10μA Verbrauch im Tiefschlaf.
+Wechsel auf [Firebeetle ESP32](https://www.dfrobot.com/product-1590.html) mit theoretisch 10μA Verbrauch im Tiefschlaf. In der Praxis ist der Gesamtverbrauch im Tiefschlaf <60μA.
 
 
+Montageanleitung
+-----------------
+
+siehe [hier](montage.md)
