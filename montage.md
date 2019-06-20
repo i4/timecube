@@ -6,7 +6,13 @@ Montageanleitung
 ### Gehäuse
 
 Der Würfel kann je nach Belieben aus Acryl oder Holz angefertig werden.
-Es gibt Vorlagen für den Lasercutter für 3mm und 4mm Materialdicke.
+Es gibt Vorlagen für den Lasercutter für [3mm](lasercut-firebeetle-3mm.svg) und [4mm](lasercut-firebeetle-3mm.svg) Materialdicke.
+
+### Bauteile
+
+  * ESP32 Mikrocontroller mit Ladeelektronik [DFRobot FireBeetle ESP32](https://www.dfrobot.com/product-1590.html)
+  * 3-Achsen Beschleunigungssensor [Adafruit LIS3DH](https://www.adafruit.com/product/2809) ca. 5 Euro bei [EXP Tech](https://www.exp-tech.de/sensoren/beschleunigung/6790/adafruit-lis3dh-triple-axis-accelerometer-2g/4g/8g/16g)
+  * 3.7V Lithium-Polymer-Akku (z.B. mit 1000mAh); ca. 6 Euro bei [EXP Tech](https://www.exp-tech.de/zubehoer/batterien-akkus/lipo-akkus/5801/lipo-akku-1000mah-3.7-v-2-mm-jst)
 
 ### Vorbereitung Firebeetle und LIS3DH
 
@@ -19,6 +25,8 @@ Es gibt Vorlagen für den Lasercutter für 3mm und 4mm Materialdicke.
 ![Firebeetle Vorbereitung](images/firebeetle_preparation.png)
 
 ### Zusammenbau
+
+![Schema](images/schema.png)
 
   * Am *Firebeetle* werden an folgenden Anschlüssen Kabel angelötet:
     * Batterie positiv
@@ -47,7 +55,7 @@ Es gibt Vorlagen für den Lasercutter für 3mm und 4mm Materialdicke.
 
 ![Firebeetle LIS3DH 1](images/firebeetle_lis3dh1.png)
 
-  * Anschliessend wird die Stifleiste mit den * LIS3DH*  mit den SPI-Anschlüssen `SCL`, `SDA`, `SDO` und `CS`
+  * Anschliessend wird die Stifleiste mit den *LIS3DH*  mit den SPI-Anschlüssen `SCL`, `SDA`, `SDO` und `CS`
     verbunden und das Board somit ebenfalls fixiert.
 
 ![Firebeetle LIS3DH 2](images/firebeetle_lis3dh2.png)
