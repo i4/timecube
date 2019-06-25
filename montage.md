@@ -5,8 +5,9 @@ Montageanleitung
 
 ### Gehäuse
 
-Der Würfel kann je nach Belieben aus Acryl oder Holz angefertig werden.
+Der Würfel kann je nach Belieben aus Acryl oder Holz (Sperrholz) angefertig werden.
 Es gibt Vorlagen für den Lasercutter für [3mm](lasercut-firebeetle-3mm.svg) und [4mm](lasercut-firebeetle-3mm.svg) Materialdicke.
+Bei der Verwendung von Sperrholz können für die Befestigung des Mikrocontrollers Eisenschrauben verwendet werden, bei Acryl sollten entweder Plastikschrauben verwendet werden oder zusätzliche Löcher hinzugefügt werden, um eine Befestigung mit Draht zu ermöglichen.
 
 ### Bauteile
 
