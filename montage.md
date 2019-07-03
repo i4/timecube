@@ -11,17 +11,17 @@ Bei der Verwendung von Sperrholz können für die Befestigung des Mikrocontrolle
 
 ### Bauteile
 
-  * ESP32 Mikrocontroller mit Ladeelektronik [DFRobot FireBeetle ESP32](https://www.dfrobot.com/product-1590.html)
-  * 3-Achsen Beschleunigungssensor [Adafruit LIS3DH](https://www.adafruit.com/product/2809) ca. 5 Euro bei [EXP Tech](https://www.exp-tech.de/sensoren/beschleunigung/6790/adafruit-lis3dh-triple-axis-accelerometer-2g/4g/8g/16g)
+  * ESP32 Mikrocontroller mit Ladeelektronik [DFRobot FireBeetle ESP32 (Rev. 3)](https://www.dfrobot.com/product-1590.html); ca. 17 Euro bei [Mouser](https://www.mouser.de/new/dfrobot/dfrobot-firebeetle/)
+  * 3-Achsen Beschleunigungssensor [Adafruit LIS3DH](https://www.adafruit.com/product/2809); ca. 5 Euro bei [EXP Tech](https://www.exp-tech.de/sensoren/beschleunigung/6790/adafruit-lis3dh-triple-axis-accelerometer-2g/4g/8g/16g)
   * 3.7V Lithium-Polymer-Akku (z.B. mit 1000mAh); ca. 6 Euro bei [EXP Tech](https://www.exp-tech.de/zubehoer/batterien-akkus/lipo-akkus/5801/lipo-akku-1000mah-3.7-v-2-mm-jst)
 
 ### Vorbereitung Firebeetle und LIS3DH
 
-  * Beim *LIS3DH* einen Widerstand herauslöten, da dieser unnötig Strom verbraucht.
+  * Beim *LIS3DH* den Widerstand `R1` (rechts über den Text `SDA`) herauslöten, da dieser unnötig Strom verbraucht ([vgl. Diskussion im Adafruit Froum](https://forums.adafruit.com/viewtopic.php?f=19&t=107822#p539250)).
 
 ![LIS3DH Vorbereitung](images/lis3dh_preparation.png)
 
-  * Die Lötbrücken beim *Firebeetle* verbinden, damit der bereits vorhandene Spannungsteiler (vgl. Schaltplan) zum Batteriestand messen verwendet werden kann.
+  * Die Lötbrücken (im [Schema](https://images-na.ssl-images-amazon.com/images/I/A1VO7RyKHzL.pdf) verwirrender Weise als 0 Ω Widerstand `R10` und `R11` bezeichnet) beim *FireBeetle* verbinden, damit der bereits vorhandene Spannungsteiler zum Messen der Batterie verwendet werden kann.
 
 ![Firebeetle Vorbereitung](images/firebeetle_preparation.png)
 
@@ -29,7 +29,7 @@ Bei der Verwendung von Sperrholz können für die Befestigung des Mikrocontrolle
 
 ![Schema](images/schema.png)
 
-  * Am *Firebeetle* werden an folgenden Anschlüssen Kabel angelötet:
+  * Am *FireBeetle* werden an folgenden Anschlüssen Kabel angelötet:
     * Batterie positiv
     * Batterie negativ
     * Ground `GND`
@@ -49,7 +49,7 @@ Bei der Verwendung von Sperrholz können für die Befestigung des Mikrocontrolle
 
   ![Firebeetle Platte](images/firebeetle_plate.png)
 
-  * Der *Firebeetle* wird nun mit dem *LIS3DH*  verbunden:
+  * Der *FireBeetle* wird nun mit dem *LIS3DH*  verbunden:
     * `3V3` auf Eingang Versorgungsspannung `Vin`
     * `GND` mit `GND` verbinden
     * `IO27/D4` auf Interrupt Pin `INT`
@@ -61,7 +61,7 @@ Bei der Verwendung von Sperrholz können für die Befestigung des Mikrocontrolle
 
 ![Firebeetle LIS3DH 2](images/firebeetle_lis3dh2.png)
 
-  * Die Batterie mit den verbleibenden Kabeln vom *Firebeetle* verbinden (**dabei auf die Polung achten!**).
+  * Die Batterie mit den verbleibenden Kabeln vom *FireBeetle* verbinden (**dabei auf die Polung achten!**).
   Die Batterie auf der zweiten Innenplatte fixieren, z.B. mit etwas Klebeband.
 
 ![Batterie](images/battery_assembly.png)
