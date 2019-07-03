@@ -1,12 +1,12 @@
 <?php
-require_once('../config.php');
+require_once('config.php');
 
 function exception_error_handler($severity, $message, $file, $line) {
-    if (!(error_reporting() & $severity)) {
-        // This error code is not included in error_reporting
-        return;
-    }
-    throw new ErrorException($message, 0, $severity, $file, $line);
+	if (!(error_reporting() & $severity)) {
+		// This error code is not included in error_reporting
+		return;
+	}
+	throw new ErrorException($message, 0, $severity, $file, $line);
 }
 set_error_handler("exception_error_handler");
 
@@ -18,66 +18,47 @@ function status($msg, $code = 400, $title = 'Bad Request'){
 $pdo = new PDO("pgsql:host=$DBHOST;dbname=$DBNAME;user=$DBUSER;password=$DBPASS");
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$mac = null;
-$alias = null;
-$email = null;
-$name = null;
-$note = null;
+$user = array();
 $site = empty($_REQUEST['site']) ? 'dashboard' : $_REQUEST['site'];
 
 if (!empty($_REQUEST['mac'])){
-	$stmt_client = $pdo->prepare('SELECT mac, alias, email, name, note FROM client WHERE mac = ?');
+	$stmt_client = $pdo->prepare('SELECT client.uid AS uid, client.mac AS mac, users.alias AS alias, users.email AS email, users.name AS name, users.note AS note, users.password AS password FROM client JOIN users ON (client.uid = users.uid) WHERE mac = ?');
 	if ($stmt_client->execute(array($_REQUEST['mac'])) && $row_client = $stmt_client->fetch(PDO::FETCH_ASSOC)){
-		$mac = $row_client['mac'];
-		$alias = $row_client['alias'];
-		$email = $row_client['email'];
-		$name = $row_client['name'];
-		$note = $row_client['note'];
-	} else {
-		// Datensatz anlegen
-		$pdo->beginTransaction();
-		$stmt_client = $pdo->prepare('INSERT INTO client (mac, alias, email, name, note) VALUES (?, ?, NULL, NULL, NULL)');
-		$alias = empty($_REQUEST['alias']) ? $_REQUEST['mac'] : $_REQUEST['alias'];
-		if ($stmt_client->execute(array($_REQUEST['mac'], $alias ))){
-			$mac = $_REQUEST['mac'];
-			// Standardbezeichner anlegen
-			$stmt_desc = $pdo->prepare('INSERT INTO description (mac, side, hide, name) VALUES (?, ?, ?, ?)');
-			foreach($SIDES as $side)
-				$stmt_desc->execute(array($mac, $side['id'], $side['hide'] ? 1 : 0, $side['name']));
-		}
-		$pdo->commit();
+		$user = new ArrayObject($row_client);
 	}
 } else if (!empty($_REQUEST['alias'])){
-	$stmt_client = $pdo->prepare('SELECT mac, alias, email, name, note FROM client WHERE alias = ?');
-	if ($stmt_client->execute(array($_REQUEST['alias'])) && $row_client = $stmt_client->fetch(PDO::FETCH_ASSOC)){
-		$mac = $row_client['mac'];
-		$alias = $row_client['alias'];
-		$email = $row_client['email'];
-		$name = $row_client['name'];
-		$note = $row_client['note'];
+	$stmt_user = $pdo->prepare('SELECT uid, alias, email, name, note, password FROM users WHERE alias = ?');
+	if ($stmt_user->execute(array($_REQUEST['alias'])) && $row_user = $stmt_user->fetch(PDO::FETCH_ASSOC)){
+		$user = new ArrayObject($row_user);
 	}
 } else {
 	status('Keine Benutzerkennung');
 }
 
-if (empty($mac)){
+if (empty($user['uid'])){
 	status('Keine valide Benutzerkennung');
 }
+
+
 
 switch ($site){
 	case 'data.js':
 		// Header
 		header('Content-type: text/javascript');
-		echo 'var data={"name":"'.$name.'","connection":';
-		// Connection data
-		$stmt_conn = $pdo->prepare('SELECT connection.side AS sid, description.side AS side, description.name AS task, connection.time AS time, connection.voltage AS voltage FROM connection JOIN description ON (connection.side = description.id) WHERE connection.mac = ? ORDER BY connection.time');
-		$stmt_conn->execute(array($mac));
-		echo json_encode($stmt_conn->fetchAll(PDO::FETCH_ASSOC));
-		echo ',"series":[';
+		echo 'var data={"name":"'.$user['name'].'","cube":[';
+		$stmt_cube = $pdo->prepare('SELECT mac, name FROM cubes WHERE uid = ? ORDER BY mac');
+		$stmt_cube->execute(array($user['uid']));
+		while ($row_cube = $stmt_cube->fetch(PDO::FETCH_ASSOC)){
+			// Connection data
+			$stmt_conn = $pdo->prepare('SELECT voltage, time FROM connection WHERE mac = ? ORDER BY time');
+			$stmt_conn->execute(array($row_cube['mac']));
+			echo '{"id":"'.$row_cube['name'].'","connection":'.json_encode($stmt_conn->fetchAll(PDO::FETCH_ASSOC)).'},';
+		}
+		echo '],"series":[';
 		// Data
-		$stmt_desc = $pdo->prepare('SELECT id AS sid, side, hide, name AS task FROM description WHERE mac = ? ORDER BY id');
-		$stmt_desc->execute(array($mac));
-		$stmt_log = $pdo->prepare('SELECT begin, stop FROM data WHERE side = ? ORDER BY begin');
+		$stmt_desc = $pdo->prepare("SELECT id AS sid, name AS task, concat('#', color) AS color, icon, hidden AS hide FROM categories WHERE uid = ? ORDER BY id");
+		$stmt_desc->execute(array($user['uid']));
+		$stmt_log = $pdo->prepare('SELECT begin, stop FROM data WHERE category = ? ORDER BY begin');
 		$first = true;
 		while ($row_desc = $stmt_desc->fetch(PDO::FETCH_ASSOC)){
 			if ($first)
@@ -118,7 +99,7 @@ switch ($site){
 		if (!empty($_REQUEST['d'])){
 			$data = explode(' ', $_REQUEST['d']);
 			if (count($data) > 0){
-				$stmt_data = $pdo->prepare('INSERT INTO data (side, begin, stop) VALUES (?, ?, ?)');
+				$stmt_data = $pdo->prepare('INSERT INTO data (side, begin, stop) VALUES (?, ?, ?) ON CONFLICT DO NOTHING');
 				for ($i = 0; $i < count($data); $i++){
 					$d = hexdec($data[$i]);
 					$side = $d & 0x7;
@@ -147,4 +128,3 @@ switch ($site){
 
 
 ?>
-
