@@ -1,6 +1,3 @@
-[submodule "server/www/assets/apexcharts.js"]
-	path = server/www/assets/apexcharts.js
-	url = https://github.com/apexcharts/apexcharts.js.git
 [submodule "server/www/assets/bootstrap"]
 	path = server/www/assets/bootstrap
 	url = https://github.com/twbs/bootstrap.git
