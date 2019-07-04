@@ -1,6 +1,6 @@
 // Header
 if (data.name != "") {
-	document.getElementById("header").innerHTML = "Zeiterfassungswürfel von " + data.name;
+	document.getElementById("header").innerHTML = "<i class=\"fas fa-cube\"></i> " + data.name;
 }
 
 function renderChart(elementId, options){

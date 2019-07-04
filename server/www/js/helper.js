@@ -321,8 +321,9 @@ function generateWeekHeatmap(data, start, end, series = NaN, options = { title: 
 	}
 
 	for (var i=0; i<data.series.length; i++) {
-		if (data.series[i].hide || (!isNaN(series) && series != data.series[i].side))
+		if ((isNaN(series) && data.series[i].hide) || (!isNaN(series) && series != i))
 			continue;
+		console.log("match");
 		for (var j = 0; j<data.series[i].data.length;j++){
 			var e = data.series[i].data[j];
 			if (e[1]  >= start && e[0]  <= end){
@@ -353,6 +354,8 @@ function generateWeekHeatmap(data, start, end, series = NaN, options = { title: 
 			});
 		}
 	}
+
+	console.log(start, end, series, data,options);
 	return options;
 }
 
@@ -373,7 +376,7 @@ function generateYearHeatmap(data, series = NaN,  options = { title: { style: {}
 	var days = Math.ceil((now.getTime() - start.getTime()) / dayTime)
 
 	for (var i=0; i<data.series.length; i++) {
-		if (data.series[i].hide || (!isNaN(series) && series != data.series[i].side))
+		if ((isNaN(series) && data.series[i].hide) || (!isNaN(series) && series != i))
 			continue;
 		for (var j = 0; j<data.series[i].data.length;j++){
 			var e = data.series[i].data[j];
