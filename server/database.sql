@@ -92,9 +92,9 @@ ALTER SEQUENCE public.categories_id_seq OWNED BY public.categories.id;
 CREATE TABLE public.connection (
     id integer NOT NULL,
     mac character varying(12) NOT NULL,
-    side integer NOT NULL,
     voltage smallint NOT NULL,
-    "time" integer NOT NULL
+    "time" integer NOT NULL,
+    items integer
 );
 
 
@@ -128,7 +128,8 @@ ALTER SEQUENCE public.connection_id_seq OWNED BY public.connection.id;
 CREATE TABLE public.cubes (
     uid integer NOT NULL,
     mac character varying(12) NOT NULL,
-    secret character varying(100)
+    secret character varying(100),
+    name character varying(100)
 );
 
 
@@ -342,14 +343,6 @@ ALTER TABLE ONLY public.connection
 
 
 --
--- Name: connection connection_now_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.connection
-    ADD CONSTRAINT connection_now_fkey FOREIGN KEY (side) REFERENCES public.cubesides(id);
-
-
---
 -- Name: cubes cubes_uid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -390,6 +383,20 @@ ALTER TABLE ONLY public.data
 
 
 --
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
+--
+
+GRANT USAGE ON SCHEMA public TO timelog;
+
+
+--
+-- Name: TABLE categories; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.categories TO timelog;
+
+
+--
 -- Name: SEQUENCE categories_id_seq; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -411,6 +418,13 @@ GRANT SELECT,USAGE ON SEQUENCE public.connection_id_seq TO timelog;
 
 
 --
+-- Name: TABLE cubes; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.cubes TO timelog;
+
+
+--
 -- Name: TABLE cubesides; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -425,10 +439,24 @@ GRANT SELECT,USAGE ON SEQUENCE public.cubesides_id_seq TO timelog;
 
 
 --
+-- Name: TABLE data; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.data TO timelog;
+
+
+--
 -- Name: SEQUENCE data_id_seq; Type: ACL; Schema: public; Owner: postgres
 --
 
 GRANT SELECT,USAGE ON SEQUENCE public.data_id_seq TO timelog;
+
+
+--
+-- Name: TABLE users; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.users TO timelog;
 
 
 --
