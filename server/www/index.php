@@ -22,7 +22,7 @@ $user = array();
 $site = empty($_REQUEST['site']) ? 'dashboard' : $_REQUEST['site'];
 
 if (!empty($_REQUEST['mac'])){
-	$stmt_client = $pdo->prepare('SELECT client.uid AS uid, client.mac AS mac, users.alias AS alias, users.email AS email, users.name AS name, users.note AS note, users.password AS password FROM client JOIN users ON (client.uid = users.uid) WHERE mac = ?');
+	$stmt_client = $pdo->prepare('SELECT cubes.uid AS uid, cubes.mac AS mac, users.alias AS alias, users.email AS email, users.name AS name, users.note AS note, users.password AS password FROM cubes JOIN users ON (cubes.uid = users.uid) WHERE cubes.mac = ?');
 	if ($stmt_client->execute(array($_REQUEST['mac'])) && $row_client = $stmt_client->fetch(PDO::FETCH_ASSOC)){
 		$user = new ArrayObject($row_client);
 	}
@@ -81,11 +81,11 @@ switch ($site){
 		$time = hexdec($_REQUEST['t']);
 
 		// fetch current sides
-		$stmt_desc = $pdo->prepare('SELECT DISTINCT ON (side) id, side FROM description WHERE mac = ? ORDER BY side,id DESC');
-		$stmt_desc->execute(array($mac));
-		$side_id = array();
+		$stmt_desc = $pdo->prepare('SELECT DISTINCT ON (side) category, side FROM cubesides WHERE mac = ? ORDER BY side,id DESC');
+		$stmt_desc->execute(array($_REQUEST['mac']));
+		$category = array();
 		while ($row_desc = $stmt_desc->fetch(PDO::FETCH_ASSOC))
-			$side_id[$row_desc['side']] = $row_desc['id'];
+			$category[$row_desc['side']] = $row_desc['category'];
 		// Use delta time (if necessary)
 		$delta = 0;
 		if ($time < 1000000000){
@@ -96,26 +96,29 @@ switch ($site){
 		// update data
 		$pdo->beginTransaction();
 		$side = 0;
+		$items = 0;
 		if (!empty($_REQUEST['d'])){
 			$data = explode(' ', $_REQUEST['d']);
 			if (count($data) > 0){
-				$stmt_data = $pdo->prepare('INSERT INTO data (side, begin, stop) VALUES (?, ?, ?) ON CONFLICT DO NOTHING');
+				$stmt_data = $pdo->prepare('INSERT INTO data (category, begin, stop, mac) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING');
 				for ($i = 0; $i < count($data); $i++){
 					$d = hexdec($data[$i]);
 					$side = $d & 0x7;
 					$begin = $d & ~(0x7);
 					if ($i < count($data) - 1 ){
 						$stop =  hexdec($data[$i + 1]) & ~(0x7);
-						if ($begin < $stop)
-							$stmt_data->execute(array($side_id[$side], $begin, $stop));
+						if ($begin < $stop) {
+							$items++;
+							$stmt_data->execute(array($category[$side], $begin, $stop, $_REQUEST['mac']));
+						}
 					}
 				}
 			}
 		}
 		// update connection
 		$voltage = hexdec($_REQUEST['v']);
-		$stmt_conn = $pdo->prepare('INSERT INTO connection (mac, side, time, voltage) VALUES (?, ?, ?, ?)');
-		$stmt_conn->execute(array($mac, $side_id[$side], $time, $voltage));
+		$stmt_conn = $pdo->prepare('INSERT INTO connection (mac, items, time, voltage) VALUES (?, ?, ?, ?)');
+		$stmt_conn->execute(array($_REQUEST['mac'], $items, $time, $voltage));
 		$pdo->commit();
 		status('Eingetragen.', 200, 'OK');
 		break;
@@ -125,6 +128,4 @@ switch ($site){
 	default:
 		include('dashboard.html');
 }
-
-
 ?>
