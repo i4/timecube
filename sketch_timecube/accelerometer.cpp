@@ -1,6 +1,6 @@
 /* Based on Adafruit_LIS3DH.h by K. Townsend / Limor Fried (Adafruit Industries) */
 
-#include "accelerator.h"
+#include "accelerometer.h"
 
 #define REG_STATUS1       0x07
 #define REG_OUTADC1_L     0x08
@@ -45,9 +45,9 @@
 #define REG_ACTTHS        0x3E
 #define REG_ACTDUR        0x3F
 
-Accelerator::Accelerator(int8_t cspin)  : _cs(cspin) { }
+Accelerometer::Accelerometer(int8_t cspin)  : _cs(cspin) { }
 
-bool Accelerator::begin(accel_dataRate_t dataRate, accel_range_t range) {
+bool Accelerometer::begin(accel_dataRate_t dataRate, accel_range_t range) {
 
   digitalWrite(_cs, HIGH);
   pinMode(_cs, OUTPUT);
@@ -65,7 +65,6 @@ bool Accelerator::begin(accel_dataRate_t dataRate, accel_range_t range) {
   // enable all axes, normal mode
   writeRegister8(REG_CTRL1, 0x0f | (dataRate << 4));
 
-  // High res & BDU enabled
   // Block data update
   writeRegister8(REG_CTRL4, 0x80 | (range << 4));
   
@@ -75,7 +74,7 @@ bool Accelerator::begin(accel_dataRate_t dataRate, accel_range_t range) {
 }
 
 
-void Accelerator::read(void) {
+void Accelerometer::read(void) {
   // read x y z at once
 
   SPI.beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
@@ -94,7 +93,7 @@ void Accelerator::read(void) {
 
 }
 
-void Accelerator::setMovement(uint8_t movethresh, uint8_t duration) {
+void Accelerometer::setMovementInterrupt(uint8_t movethresh, uint8_t duration) {
   uint8_t r = readRegister8(REG_CTRL3);
   r |= (0x20); // turn on IA2
   writeRegister8(REG_CTRL3, r);
@@ -105,11 +104,11 @@ void Accelerator::setMovement(uint8_t movethresh, uint8_t duration) {
   writeRegister8(REG_INT2CFG, 0x7f); // turn on all axes + 6D
 }
 
-uint8_t Accelerator::getMovement(void) {
+uint8_t Accelerometer::getMovement(void) {
   return readRegister8(REG_INT2SRC);
 }
 
-void Accelerator::setClick(uint8_t mask, uint8_t clickthresh, uint8_t timelimit, uint8_t timelatency, uint8_t timewindow) {
+void Accelerometer::setClickInterrupt(uint8_t mask, uint8_t clickthresh, uint8_t timelimit, uint8_t timelatency, uint8_t timewindow) {
   uint8_t r = readRegister8(REG_CTRL3);
   if (mask == 0) {
     //disable int
@@ -122,7 +121,7 @@ void Accelerator::setClick(uint8_t mask, uint8_t clickthresh, uint8_t timelimit,
   r |= (0x80); // turn on I1_CLICK
   writeRegister8(REG_CTRL3, r);
 
-  writeRegister8(REG_CLICKCFG, (mask & 1 ?  0x15 : 0) | (mask & 2 ?  0x2a : 0)); // turn on all axes & tap
+  writeRegister8(REG_CLICKCFG, ((mask & 1) != 0 ?  0x15 : 0) | ((mask & 2) != 0 ?  0x2a : 0)); // turn on all axes & tap
   
   writeRegister8(REG_CLICKTHS, clickthresh); // arbitrary
   writeRegister8(REG_TIMELIMIT, timelimit); // arbitrary
@@ -130,12 +129,12 @@ void Accelerator::setClick(uint8_t mask, uint8_t clickthresh, uint8_t timelimit,
   writeRegister8(REG_TIMEWINDOW, timewindow); // arbitrary
 }
 
-uint8_t Accelerator::getClick(void) {
+uint8_t Accelerometer::getClick(void) {
   return readRegister8(REG_CLICKSRC);
 }
 
 
-void Accelerator::writeRegister8(uint8_t reg, uint8_t value) {
+void Accelerometer::writeRegister8(uint8_t reg, uint8_t value) {
   SPI.beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
   digitalWrite(_cs, LOW);
   SPI.transfer(reg & ~0x80); // write, bit 7 low
@@ -144,7 +143,7 @@ void Accelerator::writeRegister8(uint8_t reg, uint8_t value) {
   SPI.endTransaction();              // release the SPI bus
 }
 
-uint8_t Accelerator::readRegister8(uint8_t reg) {
+uint8_t Accelerometer::readRegister8(uint8_t reg) {
   SPI.beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
   digitalWrite(_cs, LOW);
   SPI.transfer(reg | 0x80); // read, bit 7 high

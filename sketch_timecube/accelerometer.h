@@ -8,7 +8,7 @@
 
 #include <SPI.h>
 
-class Accelerator {
+class Accelerometer {
   typedef enum {
     RANGE_16_G          = 0b11,   // +/- 16g
     RANGE_8_G           = 0b10,   // +/- 8g
@@ -38,16 +38,16 @@ class Accelerator {
   } accel_dataRate_t;
 
  public:
-  Accelerator(int8_t cspin);
+  Accelerometer(int8_t cspin);
 
   bool begin(accel_dataRate_t dataRate = DATARATE_10_HZ, accel_range_t range = RANGE_2_G);
  
   void read();
 
-  void setMovement(uint8_t movethresh = 0x20, uint8_t duration = 0x05);
+  void setMovementInterrupt(uint8_t movethresh = 0x20, uint8_t duration = 0x05);
   uint8_t getMovement(void);
   
-  void setClick(uint8_t mask, uint8_t clickthresh, uint8_t timelimit = 10, uint8_t timelatency = 20, uint8_t timewindow = 255);
+  void setClickInterrupt(uint8_t mask, uint8_t clickthresh, uint8_t timelimit = 10, uint8_t timelatency = 20, uint8_t timewindow = 255);
   uint8_t getClick(void);
 
   int8_t x, y, z;
