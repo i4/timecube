@@ -46,8 +46,8 @@
 #define TIMELOG_THRESHOLD 500
 
 
-// Interrupt Ping fuer Beschleunigungssensor
-#define ACCEL_INT_PIN GPIO_NUM_21
+// Interrupt Pin fuer Beschleunigungssensor
+#define ACCEL_INT_PIN GPIO_NUM_27
 // Grenzwert fuer die Klickerkennung
 #define ACCEL_CLICK_THS 80
 // SPI Cable Select Pin fuer Beschleunigungssensor

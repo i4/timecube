@@ -25,7 +25,6 @@ const char* wlan_ssid = WLAN_SSID;
 const char* sync_http_host = SYNC_HTTP_HOST;
 
 const uint8_t side_translate[6] = SIDE_MAPPING;
-RTC_DATA_ATTR uint8_t side_last = 0;
 RTC_DATA_ATTR uint8_t timelog_entry = 0;
 RTC_DATA_ATTR time_t timelog[TIMELOG_MAX];
 RTC_DATA_ATTR time_t wakeup = SYNC_INTERVAL;
@@ -62,29 +61,26 @@ static uint8_t getSide(){
 
 static uint8_t getStableSide(){
   // Get current side
-  uint8_t side = getSide();
-  // If changed, wait for stable side
-  if (side != side_last) {
-    side_last = side;
-    // try to save power during sleep
-    esp_sleep_enable_timer_wakeup(SIDE_DELAY * 1000);
-    // we need SIDE_COUNT stable reads
-    for (uint8_t n = 0 ; n < SIDE_COUNT ; n++){
-      // try light sleep, fall back to delay
-      if (esp_light_sleep_start() != ESP_OK){
-        SDBGLN("delay");
-        delay(SIDE_DELAY);
-      }
-      // Update Side
-      side = getSide();
-      // check if stable or reset
-      if (side_last != side){
-        side_last = side;
-        n = 0;
-      }
+  uint8_t side_last = getSide();
+  // try to save power during sleep
+  esp_sleep_enable_timer_wakeup(SIDE_DELAY * 1000);
+  // we need SIDE_COUNT stable reads
+  for (uint8_t n = 0 ; n < SIDE_COUNT ; n++){
+    // try light sleep, fall back to delay
+    if (esp_light_sleep_start() != ESP_OK){
+      SDBGLN("delay");
+      delay(SIDE_DELAY);
     }
+    // Update Side
+    uint8_t side = getSide();
+    // check if stable or reset
+    if (side_last != side){
+      side_last = side;
+      n = 0;
+    }
+
   }
-  return side;
+  return side_last;
 }
 
 
@@ -207,8 +203,6 @@ static bool uploadData(){
     SDBGLN(voltage);
     SDBG("time: ");
     SDBGLN(now);
-    SDBG("side: ");
-    SDBGLN(side_last);
     SDBGLN("data:");
     for (int i = 0; i < timelog_entry; i++){
       SDBG("\t");
@@ -231,7 +225,7 @@ static bool uploadData(){
       client.print("/upload HTTP/1.1\r\nHost: ");
       client.print(sync_http_host);
       client.print("\r\nUser-Agent: i4Zeitwuerfel\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ");
-      client.print(timelog_entry == 0 ? 15 : (17 + (timelog_entry - 1) * 9));
+      client.print(timelog_entry == 0 ? 15 : (17 + timelog_entry * 9));
       client.print("\r\n\r\n");
       client.printf("v=%02X", voltage);
       client.printf("&t=%08X", now);
