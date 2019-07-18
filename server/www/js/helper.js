@@ -287,10 +287,11 @@ function generateWorkCircle(data, start, end, options = {}){
 	var weekBegin = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate() + (dateNow.getDay() == 0?-6:1)-dateNow.getDay());
 	var weekEnd = new Date();
 	weekEnd.setDate(weekBegin.getDate() + 7);
+	weekEnd.setHours(0,0,0,0);
 	generateWorkCircleHelper(data, options, weekBegin, weekEnd, "Woche", '#39539E');
 
 	var monthBegin = new Date(dateNow.getFullYear(), dateNow.getMonth(), 1);
-	var monthEnd = new Date(dateNow.getFullYear(), dateNow.getMonth()+1, 0);
+	var monthEnd = new Date(dateNow.getFullYear(), dateNow.getMonth()+1, 1);
  	generateWorkCircleHelper(data, options, monthBegin, monthEnd, "Monat", '#0077B5');
 
 	var yearBegin = new Date(dateNow.getFullYear(), 0, 1);
