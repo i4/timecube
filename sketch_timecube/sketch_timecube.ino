@@ -23,8 +23,10 @@ const uint8_t side_translate[6] = SIDE_MAPPING;
 RTC_DATA_ATTR uint8_t timelog_entry = 0;
 RTC_DATA_ATTR time_t timelog[TIMELOG_MAX];
 RTC_DATA_ATTR time_t wakeup = SYNC_INTERVAL;
+
 RTC_DATA_ATTR unsigned deep_sleep = 0;
 RTC_DATA_ATTR unsigned sync_counter = 0;
+RTC_DATA_ATTR unsigned bug_counter = 0;
 
 static_assert(sizeof(time_t) == 4, "time_t Size");
 
@@ -202,7 +204,7 @@ static bool updateTime() {
 
 static bool uploadData(){
   if(wlanConnect()) {
-    uint64_t mac =  ESP.getEfuseMac();
+    uint64_t mac = ESP.getEfuseMac();
     uint8_t battery = getBattery();
     time_t now;
     time(&now);
@@ -317,7 +319,7 @@ void setup() {
   // Wait 10 ms
   delay(10);
 
-  SDBGLN("Starting Watchdog...");
+  SDBGF("Starting Watchdog (Bug Counter: %d)...\n", bug_counter);
   #define DEINIT_TIMEOUT (60 * 1000 * 1000)
   timer = timerBegin(0, 80, true);
   timerAttachInterrupt(timer, &resetSystem, true);
@@ -408,7 +410,15 @@ void setup() {
 }
 
 void resetSystem() {
-  SDBGLN("[BUG] Watchdog triggered; Resetting System");
+  ++bug_counter;
+  SDBGLN("  -=============-");
+  SDBGLN(" -===============-");
+  SDBGLN("-=================-");
+  SDBGLN("|~~~    BUG    ~~~|");
+  SDBGLN("-=================-");
+  SDBGLN(" -===============-");
+  SDBGLN("  -=============-");
+  SDBGF("[BUG %d] Watchdog triggered; Resetting System\n", bug_counter);
 #ifdef SERIAL_DEBUG
   Serial.flush();
 #endif
