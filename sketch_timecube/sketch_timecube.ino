@@ -36,12 +36,13 @@ static uint8_t getBattery() {
   static uint8_t battery = UNKNOWN_BATTERY;
 
   if(UNKNOWN_BATTERY == battery) {
+    SDBGLN("Reading Battery State via ADC:");
+
     SDBGLN(" * Starting ADC...");
     adc_power_on();
-
-    SDBGLN("Reading Battery State via ADC:");
     analogSetAttenuation(ADC_11db);
     analogReadResolution(12);
+
     SDBGLN(" * Read from ADC...");
     int val = analogRead(A0);
 
@@ -92,7 +93,6 @@ static uint8_t getStableSide(){
       side_last = side;
       n = 0;
     }
-
   }
   return side_last;
 }
