@@ -1,9 +1,7 @@
 #include <WiFi.h>
-#include "esp_wifi.h"
 #include "esp_bt.h"
 #include "esp_wpa2.h"
 #include "esp_sleep.h"
-#include "soc/rtc_io_reg.h"
 #include "driver/gpio.h"
 #include "driver/rtc_io.h"
 #include "driver/adc.h"
@@ -283,7 +281,7 @@ static bool sync(){
   }
 
   WiFi.disconnect(true);
-    
+
   return ret;
 }
 
@@ -304,7 +302,7 @@ void setup(){
   if (!accel.begin()){
     SDBGLN("Beschleunigungssensor antwortet nicht.");
   } else {
-    //accel.setClickInterrupt(3, ACCEL_CLICK_THS);
+    accel.setClickInterrupt(3, ACCEL_CLICK_THS);
     accel.setMovementInterrupt();
   }
 
@@ -367,10 +365,10 @@ void setup(){
   esp_sleep_enable_timer_wakeup((wakeup - now) * 1000000ULL);
   
 
+  if (deep_sleep == 0)
+    esp_bt_controller_disable();
   SDBG("Schlafen #");
-  SDBGLN(++deep_sleep);
-  esp_wifi_stop();  
-  esp_bt_controller_disable();
+  SDBGLN(++deep_sleep); 
   adc_power_off();
   esp_deep_sleep_start();
 }
