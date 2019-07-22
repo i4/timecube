@@ -1,10 +1,10 @@
 #include <WiFi.h>
-#include "esp_bt.h"
-#include "esp_wpa2.h"
-#include "esp_sleep.h"
-#include "driver/gpio.h"
-#include "driver/rtc_io.h"
-#include "driver/adc.h"
+#include <esp_bt.h>
+#include <esp_wpa2.h>
+#include <esp_sleep.h>
+#include <driver/gpio.h>
+#include <driver/rtc_io.h>
+#include <driver/adc.h>
 
 #include "accelerometer.h"
 #include "config.h"
@@ -19,9 +19,6 @@
 #define SDBGLN(MSG)
 #endif
 
-const char* wlan_ssid = WLAN_SSID;
-const char* sync_http_host = SYNC_HTTP_HOST;
-
 const uint8_t side_translate[6] = SIDE_MAPPING;
 RTC_DATA_ATTR uint8_t timelog_entry = 0;
 RTC_DATA_ATTR time_t timelog[TIMELOG_MAX];
@@ -31,24 +28,43 @@ RTC_DATA_ATTR unsigned sync_counter = 0;
 
 static_assert(sizeof(time_t) == 4, "time_t Size");
 
-Accelerometer accel = Accelerometer(ACCEL_CS_PIN);
+static Accelerometer accel = Accelerometer(ACCEL_CS_PIN);
+static hw_timer_t *timer = nullptr;
 
+const uint8_t UNKNOWN_BATTERY = 0xFF;
+static uint8_t getBattery() {
+  static uint8_t battery = UNKNOWN_BATTERY;
 
-static uint8_t getVoltage(){
-  analogSetAttenuation(ADC_11db);
-  analogReadResolution(12);
-  int val = analogRead(A0);
-  SDBG("Batterie: ");
-  SDBGLN(val);
-  if (val > BATTERY_MAX)
-    return 100;
-  else if (val < BATTERY_MIN)
-    return 0;
-  else 
-    return (val - BATTERY_MIN) * 100 / (BATTERY_MAX - BATTERY_MIN);
+  if(UNKNOWN_BATTERY == battery) {
+    SDBGLN(" * Starting ADC...");
+    adc_power_on();
+
+    SDBGLN("Reading Battery State via ADC:");
+    analogSetAttenuation(ADC_11db);
+    analogReadResolution(12);
+    SDBGLN(" * Read from ADC...");
+    int val = analogRead(A0);
+
+    SDBGLN(" * Stopping ADC...");
+    adc_power_off();
+
+    SDBGF(" * Voltage from ADC: %d\n", val);
+    if (val > BATTERY_MAX) {
+      battery = 100;
+    } else if (val < BATTERY_MIN) {
+      battery = 0;
+    } else {
+      battery = (val - BATTERY_MIN) * 100 / (BATTERY_MAX - BATTERY_MIN);
+    }
+    SDBGF(" * Battery State from ADC: %d%%\n", battery);
+  } else {
+    SDBGF("Using Battery State from Previous Call: %d%%\n", battery);
+  }
+
+  return battery;
 }
 
-static uint8_t getSide(){
+static uint8_t getSide() {
   uint8_t state = accel.getMovement();
   for (uint8_t p = 0; p < 6; p++){
     if ((state & 0x3f) == (1 << p))
@@ -94,8 +110,7 @@ static bool checkSide(bool forceNewEntry = false){
     timestamp &= ~(0x7);
     timestamp |= side;
     timelog[timelog_entry++] = timestamp;
-    SDBG("Derzeit akive Seite: ");
-    SDBGLN(side);
+    SDBGF("Derzeit akive Seite: %d\n", side);
     return true;
   }
   return false;
@@ -107,22 +122,21 @@ static void wlanSetup(){
   // Disconnect previous WLAN session (although there shouldn't be any)
   WiFi.disconnect(true);
 
-  SDBG("Connecting to WLAN ");
-  SDBG(wlan_ssid);
+  SDBG("Connecting to WLAN " WLAN_SSID);
   WiFi.mode(WIFI_STA);
   #ifdef WLAN_IDENTITY
   SDBGLN(" using EAP");
   // Use EAP
-  esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)WLAN_ANONYMOUS_IDENTITY, strlen(WLAN_ANONYMOUS_IDENTITY)); 
+  esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)WLAN_ANONYMOUS_IDENTITY, strlen(WLAN_ANONYMOUS_IDENTITY));
   esp_wifi_sta_wpa2_ent_set_username((uint8_t *)WLAN_IDENTITY, strlen(WLAN_IDENTITY));
   esp_wifi_sta_wpa2_ent_set_password((uint8_t *)WLAN_PASSWORD, strlen(WLAN_PASSWORD));
   esp_wpa2_config_t wlan_config = WPA2_CONFIG_INIT_DEFAULT();
   esp_wifi_sta_wpa2_ent_enable(&wlan_config);
-  WiFi.begin(wlan_ssid);
+  WiFi.begin(WLAN_SSID);
   #else
   SDBGLN();
   // Simple connection
-  WiFi.begin(wlan_ssid, WLAN_PASSWORD);
+  WiFi.begin(WLAN_SSID, WLAN_PASSWORD);
   #endif
 }
 
@@ -135,20 +149,20 @@ static bool wlanConnect(){
     delay(WLAN_RECONNECT_DELAY);
     if (stat != prev) {
       prev = stat;
-      switch (stat){
-        case WL_NO_SHIELD: SDBG("[no WLAN Shield]"); break;
-        case WL_IDLE_STATUS: SDBG("[WLAN Idle]"); break;
-        case WL_NO_SSID_AVAIL: SDBG("[no WLAN SSID]"); break;
-        case WL_SCAN_COMPLETED: SDBG("[WLAN scan completed]"); break;
-        case WL_CONNECT_FAILED: SDBG("[WLAN connect failed]"); break;
+      switch (stat) {
+        case WL_NO_SHIELD:       SDBG("[no WLAN Shield]");       break;
+        case WL_IDLE_STATUS:     SDBG("[WLAN Idle]");            break;
+        case WL_NO_SSID_AVAIL:   SDBG("[no WLAN SSID]");         break;
+        case WL_SCAN_COMPLETED:  SDBG("[WLAN scan completed]");  break;
+        case WL_CONNECT_FAILED:  SDBG("[WLAN connect failed]");  break;
         case WL_CONNECTION_LOST: SDBG("[WLAN connection lost]"); break;
-        case WL_DISCONNECTED: SDBG("[WLAN disconnected]"); break;
+        case WL_DISCONNECTED:    SDBG("[WLAN disconnected]");    break;
         default: SDBG("[WLAN status unknown]");
       }
     }
     SDBG(".");
-    if (c >= WLAN_RECONNECT_TRIES){
-      SDBGLN("Keine WLAN  Verbindung moeglich");
+    if (c >= WLAN_RECONNECT_TRIES) {
+      SDBGLN("Keine WLAN Verbindung moeglich");
       return false;
     }
   }
@@ -158,26 +172,25 @@ static bool wlanConnect(){
 /*! \brief Update RTC using NTP
  * \return false if no WLAN connection available
  */
-static bool updateTime(){
+static bool updateTime() {
   // NTP
-  time_t now, timestamp;
-  time(&now);
+  time_t old_ts;
+  time(&old_ts);
 
-  if (!wlanConnect())
+  if (!wlanConnect()) {
     return false;
-  
-  // Sync
-  configTime(0, 0, SYNC_NTP1, SYNC_NTP2, SYNC_NTP3);
+  }
 
-  // wait
+  configTime(0, 0, SYNC_NTP1, SYNC_NTP2, SYNC_NTP3);
   delay(300);
-  
-  time(&timestamp);
-  
+
+  time_t new_ts;
+  time(&new_ts);
+
   // check if we have an initial update
-  if (now < RTC_TIMESTAMP_THS && timestamp > RTC_TIMESTAMP_THS){
+  if (old_ts < RTC_TIMESTAMP_THS && new_ts > RTC_TIMESTAMP_THS) {
     SDBGLN("Aktualisiere Timelog mit neuer Uhrzeit");
-    uint32_t delta = timestamp - now;
+    uint32_t delta = new_ts - old_ts;
     // Update entries
     delta &= ~(0x7);
     for (int i = 0; i < timelog_entry; i++)
@@ -188,62 +201,56 @@ static bool updateTime(){
 }
 
 static bool uploadData(){
-  if (wlanConnect()){
+  if(wlanConnect()) {
     uint64_t mac =  ESP.getEfuseMac();
-    uint8_t voltage = getVoltage();
+    uint8_t battery = getBattery();
     time_t now;
     time(&now);
-  
+
     // Debug status
-    SDBGF("mac %04X",(uint16_t)(mac>>32));
-    SDBGF("%08X\n",(uint32_t)mac);
-    SDBG("voltage: ");
-    SDBGLN(voltage);
-    SDBG("time: ");
-    SDBGLN(now);
-    SDBGLN("data:");
-    for (int i = 0; i < timelog_entry; i++){
-      SDBG("\t");
-      SDBG(i);
-      SDBG(".\t");
-      SDBG(timelog[i] & 0x7);
-      SDBG(" - ");
-      SDBGLN(timelog[i] & ~(0x7));
-    } 
-  
-    // Server kontaktieren
-    SDBG("Senden an ");
-    SDBGLN(sync_http_host);
+    const size_t content_length = (timelog_entry == 0) ? 15 : (17 + timelog_entry * 9);
+    #ifdef SERIAL_DEBUG
+    {
+      SDBGF("Trying to send %d timelog entries (Content-Length: %d Bytes) to " SYNC_HTTP_HOST "\n", timelog_entry, content_length);
+      SDBGF(" MAC: %04X%08X\n",(uint16_t)(mac>>32), (uint32_t)mac);
+      SDBGF(" Battery: %d%%\n", battery);
+      SDBGF(" Current Time: %ld\n", now);
+      SDBGLN(" Data:");
+      for (int i = 0; i < timelog_entry; i++){
+        const uint8_t  side = timelog[i] & 0x7;
+        const uint32_t ts   = timelog[i] & ~(0x7);
+        SDBGF("  [%d] = at %d -> side %d\n", i, ts, side);
+      }
+    }
+    #endif
+
     WiFiClient client;
     client.setTimeout(1500);
-    if (client.connect(sync_http_host, 80)) {
-      client.print("POST /");
-      client.printf("%04X",(uint16_t)(mac>>32));
-      client.printf("%08X",(uint32_t)mac);
-      client.print("/upload HTTP/1.1\r\nHost: ");
-      client.print(sync_http_host);
-      client.print("\r\nUser-Agent: i4Zeitwuerfel\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ");
-      client.print(timelog_entry == 0 ? 15 : (17 + timelog_entry * 9));
-      client.print("\r\n\r\n");
-      client.printf("v=%02X", voltage);
-      client.printf("&t=%08X", now);
-      if (timelog_entry > 0){
-        client.printf("&d=%08X",timelog[0]);
-        for (int i = 1; i < timelog_entry; i++)
-          client.printf("+%08X",timelog[i]);
+    if (client.connect(SYNC_HTTP_HOST, 80)) {
+      client.printf("POST /%04X%08X/upload HTTP/1.1\r\n", (uint16_t)(mac>>32), (uint32_t)mac);
+      client.print ("Host: " SYNC_HTTP_HOST "\r\n");
+      client.print ("User-Agent: i4Zeitwuerfel\r\n");
+      client.print ("Content-Type: application/x-www-form-urlencoded\r\n");
+      client.printf("Content-Length: %d\r\n\r\n", content_length);
+
+      client.printf("v=%02X&t=%08X", battery, now);
+      if (timelog_entry > 0) {
+        client.printf("&d=%08X", timelog[0]);
+        for (int i = 1; i < timelog_entry; i++) {
+          client.printf("+%08X", timelog[i]);
+        }
       }
-  
+
+      SDBGLN(" Response from " SYNC_HTTP_HOST ":");
       for (int t = 0; t<20 && client.connected();t++) {
-        // Check header
-        SDBGLN(t);
         String line = client.readStringUntil('\n');
-        SDBGLN(line);
-        if (line == "HTTP/1.1 200 OK\r" || line == "HTTP/1.0 200 OK\r"){
-          SDBGLN("HTTP OK ");
+        SDBGF("  [line %d] %s\n", t, line.c_str());
+        if (line == "HTTP/1.1 200 OK\r" || line == "HTTP/1.0 200 OK\r") {
           return true;
         }
-        if (line == "\r")
+        if (line == "\r") {
           break;
+        }
       }
     } else
       SDBGLN("Verbindungsprobleme");
@@ -251,28 +258,24 @@ static bool uploadData(){
   return false;
 }
 
-static bool sync(){
+static bool sync() {
   wlanSetup();
-  
+
   if (!wlanConnect())
     return false;
 
-  bool ret = true;
-
-  SDBG("IP: "); 
-  SDBGLN(WiFi.localIP());   //inform user about his IP address
-
-
+  SDBGF("IP: %s\n", WiFi.localIP().toString().c_str());
   delay(WLAN_RECONNECT_DELAY);
-  // NTP
+
+  bool ret = true;
   if (!updateTime()){
     ret = false;
     SDBGLN("NTP fehlgeschlagen");
   }
-  
-  if (uploadData()){
-    // Reset entries;
-    timelog[0]=timelog[timelog_entry - 1];
+
+  if (uploadData()) {
+    // Reset entries
+    timelog[0] = timelog[timelog_entry - 1];
     timelog_entry = 1;
     SDBGLN("HTTP Upload erfolgreich");
   } else {
@@ -285,7 +288,27 @@ static bool sync(){
   return ret;
 }
 
-void setup(){
+static void gotoDeepSleep(uint32_t wakeupTime) {
+  SDBGF("Preparing for Sleep #%d:\n", ++deep_sleep);
+
+  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+  rtc_gpio_isolate(ACCEL_INT_PIN);
+
+  esp_sleep_enable_ext0_wakeup(ACCEL_INT_PIN, 1);
+  esp_sleep_enable_timer_wakeup(wakeupTime);
+
+  SDBGLN(" * Stopping Watchdog...");
+  timerAlarmDisable(timer);
+  timerEnd(timer);
+
+  SDBGLN(" * Entering deep sleep...");
+#ifdef SERIAL_DEBUG
+  Serial.flush();
+#endif
+  esp_deep_sleep_start();
+}
+
+void setup() {
   #ifdef SERIAL_DEBUG
   // Initialize Serial connection for debug output
   Serial.begin(SERIAL_DEBUG);
@@ -294,12 +317,34 @@ void setup(){
   // Wait 10 ms
   delay(10);
 
-  // Light blue LED (on FireBeetle) 
+  SDBGLN("Starting Watchdog...");
+  #define DEINIT_TIMEOUT (60 * 1000 * 1000)
+  timer = timerBegin(0, 80, true);
+  timerAttachInterrupt(timer, &resetSystem, true);
+  timerAlarmWrite(timer, DEINIT_TIMEOUT, false);
+  timerAlarmEnable(timer);
+
+  // disable unused components on first start
+  if(0 == deep_sleep) {
+    SDBGLN("Powering down BT and ADC...");
+    esp_bt_controller_disable();
+    adc_power_off();
+  }
+
+
+  // Light blue LED (on FireBeetle)
   pinMode(STATUS_LED_PIN, OUTPUT);
   digitalWrite(STATUS_LED_PIN, HIGH);
 
+  // print current timestamp to serial (debugging)
+  {
+    time_t now;
+    time(&now);
+    SDBGF("Wakeup at %ld\n", now);
+  }
+
   // Set up Accelerometer
-  if (!accel.begin()){
+  if (!accel.begin()) {
     SDBGLN("Beschleunigungssensor antwortet nicht.");
   } else {
     accel.setClickInterrupt(3, ACCEL_CLICK_THS);
@@ -308,20 +353,22 @@ void setup(){
 
   // Get Wakeup source
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
-  switch(wakeup_reason){
+  SDBG("Wakeup reason: ");
+  switch(wakeup_reason) {
     // Valid
-    case 0: SDBGLN("Aufgeweckt durch Neustart"); break;
-    case ESP_SLEEP_WAKEUP_EXT0 : SDBGLN("Aufgeweckt durch EXT0"); break;
-    case ESP_SLEEP_WAKEUP_TIMER : SDBGLN("Aufgeweckt durch Timer"); break;
+    case 0: SDBGLN("Reboot"); break;
+    case ESP_SLEEP_WAKEUP_EXT0:  SDBGLN("EXT0");  break;
+    case ESP_SLEEP_WAKEUP_TIMER: SDBGLN("Timer"); break;
+
     // Invalid
-    case ESP_SLEEP_WAKEUP_EXT1 : SDBGLN("Aufgeweckt durch EXT1 (sollte nicht passieren)"); break;
-    case ESP_SLEEP_WAKEUP_TOUCHPAD : SDBGLN("Aufgeweckt durch Touchpad (sollte nicht passieren)"); break;
-    case ESP_SLEEP_WAKEUP_ULP : SDBGLN("Aufgeweckt durch ULP (sollte nicht passieren)"); break;
-    default : SDBGF("Aufgeweckt: %d (sollte nicht passieren)\n", wakeup_reason); break;
+    case ESP_SLEEP_WAKEUP_EXT1:     SDBGLN("EXT1 (should not happen)");        break;
+    case ESP_SLEEP_WAKEUP_TOUCHPAD: SDBGLN("Touchpad (should not happen)");    break;
+    case ESP_SLEEP_WAKEUP_ULP:      SDBGLN("ULP (should not happen)");         break;
+    default : SDBGF("Unknown reason %d (should not happen)\n", wakeup_reason); break;
   }
 
   // Do we need an WLAN synchronization?
-  bool update = wakeup_reason == ESP_SLEEP_WAKEUP_TIMER || wakeup_reason == ESP_SLEEP_WAKEUP_UNDEFINED || timelog_entry > TIMELOG_MAX;
+  bool update = (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) || (wakeup_reason == ESP_SLEEP_WAKEUP_UNDEFINED) || (timelog_entry > TIMELOG_MAX);
 
   // check tap
   uint8_t click = accel.getClick();
@@ -333,46 +380,39 @@ void setup(){
   // Timer wakeup
   time_t now;
   time(&now);
-  if (now >= wakeup)
+  if (now >= wakeup) {
     update = true;
+  }
 
   // check side
   checkSide(update);
 
   // do update
   if (update){
-     SDBG("Sync #");
-     SDBGLN(++sync_counter);
+     SDBGF("Sync #%d\n", ++sync_counter);
      sync();
-      
-   
+
      // New Timer Wakeup
      time(&now);
      wakeup = now + SYNC_INTERVAL;
-  
+
      // safety - if wlan connection was slow, lets check current side again, maybe it has been flipped meanwhile
      checkSide();
   }
 
-  // Prepare for sleep
-  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
-  rtc_gpio_isolate(ACCEL_INT_PIN);
-  
-  esp_sleep_enable_ext0_wakeup(ACCEL_INT_PIN, 1);
   // calculate next wakeup
-  if (wakeup - now < 1) 
+  if (wakeup - now < 1) {
     wakeup = now + 1;
-  esp_sleep_enable_timer_wakeup((wakeup - now) * 1000000ULL);
-  
-
-  if (deep_sleep == 0)
-    esp_bt_controller_disable();
-  SDBG("Schlafen #");
-  SDBGLN(++deep_sleep); 
-  adc_power_off();
-  esp_deep_sleep_start();
+  }
+  gotoDeepSleep((wakeup - now) * 1000000ULL);
 }
 
-void loop(){
-  // This is never going to be called due to deep sleep.
+void resetSystem() {
+  SDBGLN("[BUG] Watchdog triggered; Resetting System");
+#ifdef SERIAL_DEBUG
+  Serial.flush();
+#endif
+  gotoDeepSleep(5 * 1000ULL * 1000ULL);
 }
+
+void loop() { /* This is never going to be called due to deep sleep. */ }
