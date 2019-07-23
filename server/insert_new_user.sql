@@ -1,7 +1,7 @@
 BEGIN;
 
 WITH data (     name       ,      email         ,      alias     ,      mac           ) AS (
-   VALUES (text 'Dein Name', text 'name@mail.de', text 'kurzeURL', text 'F14xxxxxxxxx')
+   VALUES (text 'chris', text 'eichler@cs.fau.de', text 'chris', text 'B095A7C40A24')
 ), adduser AS (
 	INSERT INTO users (name, alias, email, note)
 	SELECT name, alias, email, '' FROM data

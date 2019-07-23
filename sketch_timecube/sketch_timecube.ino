@@ -290,7 +290,7 @@ static bool sync() {
   return ret;
 }
 
-static void gotoDeepSleep(uint32_t wakeupTime) {
+static void gotoDeepSleep(unsigned long long wakeupTime) {
   SDBGF("Preparing for Sleep #%d:\n", ++deep_sleep);
 
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
