@@ -25,6 +25,8 @@ Bei der Verwendung von Sperrholz können für die Befestigung des Mikrocontrolle
 
 ![Firebeetle Vorbereitung](images/firebeetle_preparation.png)
 
+>  **Schumi sagt, dass man auf den Bildern nichts erkennt!**
+
 ### Zusammenbau
 
 ![Schema](images/schema.png)
