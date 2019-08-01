@@ -123,6 +123,15 @@ switch ($site){
 		status('Eingetragen.', 200, 'OK');
 		break;
 
+    case 'data.csv':
+        header('Content-type: text/comma-separated-values');
+        echo "From;To;Duration;FromISO;ToISO;name;hidden;MAC\n";
+        $stmt_log = $pdo->prepare('SELECT data.begin AS begin, data.stop AS stop, categories.name AS name, categories.hidden AS hidden, data.mac AS mac FROM data JOIN categories ON (data.category = categories.id) WHERE categories.uid = ? ORDER BY begin, stop');
+        if ($stmt_log->execute(array($user['uid'])))
+            while ($row_log = $stmt_log->fetch(PDO::FETCH_ASSOC))
+                echo $row_log['begin'].';'.$row_log['stop'].';'.($row_log['stop']-$row_log['begin']).';'.date('c;',$row_log['begin']).date('c;',$row_log['stop']).$row_log['name'].';'.$row_log['hidden'].';'.$row_log['mac']."\r\n";
+        break;
+
 	case 'dashboard':
 	case 'update':
 	default:
