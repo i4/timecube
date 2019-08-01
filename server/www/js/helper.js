@@ -285,7 +285,7 @@ function generateWorkCircle(data, start, end, options = {}){
 	var dateNow = new Date();
 
 	var weekBegin = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate() + (dateNow.getDay() == 0?-6:1)-dateNow.getDay());
-	var weekEnd = new Date();
+	var weekEnd = new Date(weekBegin);
 	weekEnd.setDate(weekBegin.getDate() + 7);
 	weekEnd.setHours(0,0,0,0);
 	generateWorkCircleHelper(data, options, weekBegin, weekEnd, "Woche", '#39539E');
