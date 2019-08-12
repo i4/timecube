@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <esp_bt.h>
+#include <esp_wifi.h>
 #include <esp_wpa2.h>
 #include <esp_sleep.h>
 #include <driver/gpio.h>
@@ -27,6 +28,8 @@ RTC_DATA_ATTR time_t wakeup = SYNC_INTERVAL;
 RTC_DATA_ATTR unsigned deep_sleep = 0;
 RTC_DATA_ATTR unsigned sync_counter = 0;
 RTC_DATA_ATTR unsigned bug_counter = 0;
+
+RTC_DATA_ATTR bool wifi_active = false;
 
 static_assert(sizeof(time_t) == 4, "time_t Size");
 
@@ -140,6 +143,7 @@ static void wlanSetup(){
   // Simple connection
   WiFi.begin(WLAN_SSID, WLAN_PASSWORD);
   #endif
+  wifi_active = true;
 }
 
 /*! \brief Wait for WLAN connection
@@ -290,8 +294,14 @@ static bool sync() {
   return ret;
 }
 
-static void gotoDeepSleep(unsigned long long wakeupTime) {
+static void gotoDeepSleep(unsigned long long wakeupTime, bool force = false) {
   SDBGF("Preparing for Sleep #%d:\n", ++deep_sleep);
+
+  if(wifi_active && !force) {
+    SDBGLN(" * Powering down WiFi...");
+    esp_wifi_stop();
+    wifi_active = false;
+  }
 
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
   rtc_gpio_isolate(ACCEL_INT_PIN);
@@ -411,18 +421,16 @@ void setup() {
 
 void resetSystem() {
   ++bug_counter;
-  SDBGLN("  -=============-");
-  SDBGLN(" -===============-");
+
   SDBGLN("-=================-");
   SDBGLN("|~~~    BUG    ~~~|");
   SDBGLN("-=================-");
-  SDBGLN(" -===============-");
-  SDBGLN("  -=============-");
+
   SDBGF("[BUG %d] Watchdog triggered; Resetting System\n", bug_counter);
 #ifdef SERIAL_DEBUG
   Serial.flush();
 #endif
-  gotoDeepSleep(5 * 1000ULL * 1000ULL);
+  gotoDeepSleep(5 * 1000ULL * 1000ULL, /* force = */ true);
 }
 
 void loop() { /* This is never going to be called due to deep sleep. */ }
