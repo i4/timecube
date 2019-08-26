@@ -37,7 +37,7 @@ static uint8_t getBattery();
 
 const uint8_t side_translate[6] = SIDE_MAPPING;
 RTC_DATA_ATTR uint8_t timelog_entry = 0;
-RTC_DATA_ATTR time_t timelog[TIMELOG_MAX];
+RTC_DATA_ATTR tle     timelog[TIMELOG_MAX];
 RTC_DATA_ATTR time_t wakeup = SYNC_INTERVAL;
 
 RTC_DATA_ATTR unsigned deep_sleep = 0;
@@ -88,7 +88,7 @@ void setup() {
 	}
 
 	// Set up Accelerometer
-	if (!accel.begin()) {
+	if(!accel.begin()) {
 		SDBGLN("Beschleunigungssensor antwortet nicht.");
 	} else {
 		accel.setClickInterrupt(3, ACCEL_CLICK_THS);
@@ -116,7 +116,7 @@ void setup() {
 
 	// check tap
 	uint8_t click = accel.getClick();
-	if (click != 0 && (click & 0x30)){
+	if(click != 0 && (click & 0x30)) {
 		SDBGLN("Synchronisiere aufgrund von Klopfen");
 		update = true;
 	}
@@ -124,7 +124,7 @@ void setup() {
 	// Timer wakeup
 	time_t now;
 	time(&now);
-	if (now >= wakeup) {
+	if(now >= wakeup) {
 		update = true;
 	}
 
@@ -132,7 +132,7 @@ void setup() {
 	checkSide(update);
 
 	// do update
-	if (update){
+	if(update) {
 		 SDBGF("Sync #%d\n", ++sync_counter);
 		 sync();
 
@@ -145,7 +145,7 @@ void setup() {
 	}
 
 	// calculate next wakeup
-	if (wakeup - now < 1) {
+	if(wakeup - now < 1) {
 		wakeup = now + 1;
 	}
 	gotoDeepSleep((wakeup - now) * 1000000ULL);
@@ -175,9 +175,9 @@ static uint8_t getBattery() {
 		adc_power_off();
 
 		SDBGF(" * Voltage from ADC: %d\n", val);
-		if (val > BATTERY_MAX) {
+		if(val > BATTERY_MAX) {
 			battery = 100;
-		} else if (val < BATTERY_MIN) {
+		} else if(val < BATTERY_MIN) {
 			battery = 0;
 		} else {
 			battery = (val - BATTERY_MIN) * 100 / (BATTERY_MAX - BATTERY_MIN);
@@ -196,29 +196,29 @@ static uint8_t getBattery() {
  */
 static uint8_t getSide() {
 	uint8_t state = accel.getMovement();
-	for (uint8_t p = 0; p < 6; p++){
-		if ((state & 0x3f) == (1 << p))
+	for (uint8_t p = 0; p < 6; p++) {
+		if((state & 0x3f) == (1 << p))
 			return side_translate[p];
 	}
 	return 0;
 }
 
-static uint8_t getStableSide(){
+static uint8_t getStableSide() {
 	// Get current side
 	uint8_t side_last = getSide();
 	// try to save power during sleep
 	esp_sleep_enable_timer_wakeup(SIDE_DELAY * 1000);
 	// we need SIDE_COUNT stable reads
-	for (uint8_t n = 0 ; n < SIDE_COUNT ; n++){
+	for (uint8_t n = 0 ; n < SIDE_COUNT ; n++) {
 		// try light sleep, fall back to delay
-		if (esp_light_sleep_start() != ESP_OK){
+		if(esp_light_sleep_start() != ESP_OK) {
 			SDBGLN("delay");
 			delay(SIDE_DELAY);
 		}
 		// Update Side
 		uint8_t side = getSide();
 		// check if stable or reset
-		if (side_last != side){
+		if(side_last != side) {
 			side_last = side;
 			n = 0;
 		}
@@ -228,10 +228,10 @@ static uint8_t getStableSide(){
 
 
 /*! \brief Check active side (and create entry in timelog if changed)
- *  \param forceNewEntry create a new entry in timelog even if the side hasnt changed
+ *  \param forceNewEntry create a new entry in timelog even if the side hasn't changed
  *  \return true if a new entry was created
  */
-static bool checkSide(bool forceNewEntry){
+static bool checkSide(bool forceNewEntry) {
 	uint8_t side = getStableSide();
 	if (timelog_entry < TIMELOG_MAX && (forceNewEntry || timelog_entry == 0 || side != (timelog[timelog_entry - 1] & 0x7))){
 		time_t timestamp;
@@ -248,13 +248,14 @@ static bool checkSide(bool forceNewEntry){
 
 /*! \brief Connect to WLAN using given credentials
  */
-static void wlanSetup(){
+static void wlanSetup() {
 	// Disconnect previous WLAN session (although there shouldn't be any)
 	WiFi.disconnect(true);
 
 	SDBG("Connecting to WLAN " WLAN_SSID);
 	WiFi.mode(WIFI_STA);
-	#ifdef WLAN_IDENTITY
+
+#ifdef WLAN_IDENTITY
 	SDBGLN(" using EAP");
 	// Use EAP
 	esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)WLAN_ANONYMOUS_IDENTITY, strlen(WLAN_ANONYMOUS_IDENTITY));
@@ -263,11 +264,12 @@ static void wlanSetup(){
 	esp_wpa2_config_t wlan_config = WPA2_CONFIG_INIT_DEFAULT();
 	esp_wifi_sta_wpa2_ent_enable(&wlan_config);
 	WiFi.begin(WLAN_SSID);
-	#else
+#else
 	SDBGLN();
 	// Simple connection
 	WiFi.begin(WLAN_SSID, WLAN_PASSWORD);
-	#endif
+#endif
+
 	wifi_active = true;
 }
 
@@ -279,11 +281,11 @@ static void wlanSetup(){
 /*! \brief Wait for WLAN connection
  *  \return true on success, false if timed out
  */
-static bool wlanConnect(){
+static bool wlanConnect() {
 	int stat, prev = 0;
 	for (int c = 0; (stat = WiFi.status()) != WL_CONNECTED ; c++) {
 		delay(WLAN_RECONNECT_DELAY);
-		if (stat != prev) {
+		if(stat != prev) {
 			prev = stat;
 			switch (stat) {
 				case WL_NO_SHIELD:       SDBG("[no WLAN Shield]");       break;
@@ -297,7 +299,7 @@ static bool wlanConnect(){
 			}
 		}
 		SDBG(".");
-		if (c >= WLAN_RECONNECT_TRIES) {
+		if(c >= WLAN_RECONNECT_TRIES) {
 			SDBGLN("Keine WLAN Verbindung moeglich");
 			return false;
 		}
@@ -309,11 +311,10 @@ static bool wlanConnect(){
  * \return false if no WLAN connection available
  */
 static bool updateTime() {
-	// NTP
 	time_t old_ts;
 	time(&old_ts);
 
-	if (!wlanConnect()) {
+	if(!wlanConnect()) {
 		return false;
 	}
 
@@ -324,11 +325,13 @@ static bool updateTime() {
 	time(&new_ts);
 
 	// check if we have an initial update
-	if (old_ts < RTC_TIMESTAMP_THS && new_ts > RTC_TIMESTAMP_THS) {
-		SDBGLN("Aktualisiere Timelog mit neuer Uhrzeit");
-		uint32_t delta = new_ts - old_ts;
+	if(old_ts < RTC_TIMESTAMP_THS && new_ts > RTC_TIMESTAMP_THS) {
+
 		// Update entries
+		uint32_t delta = new_ts - old_ts;
 		delta &= ~(0x7);
+
+		SDBGF("Updating timelog entries with new time (delta: %ds)\n", delta);
 		for (int i = 0; i < timelog_entry; i++) {
 			timelog[i] += delta;
 		}
@@ -337,7 +340,7 @@ static bool updateTime() {
 	return true;
 }
 
-static bool uploadData(){
+static bool uploadData() {
 	if(wlanConnect()) {
 		uint64_t mac = ESP.getEfuseMac();
 		uint8_t battery = getBattery();
@@ -363,7 +366,7 @@ static bool uploadData(){
 
 		WiFiClient client;
 		client.setTimeout(1500);
-		if (client.connect(SYNC_HTTP_HOST, 80)) {
+		if(client.connect(SYNC_HTTP_HOST, 80)) {
 			client.printf("POST /%04X%08X/upload HTTP/1.1\r\n", (uint16_t)(mac>>32), (uint32_t)mac);
 			client.print ("Host: " SYNC_HTTP_HOST "\r\n");
 			client.print ("User-Agent: i4Zeitwuerfel\r\n");
@@ -371,7 +374,7 @@ static bool uploadData(){
 			client.printf("Content-Length: %d\r\n\r\n", content_length);
 
 			client.printf("v=%02X&t=%08X", battery, now);
-			if (timelog_entry > 0) {
+			if(timelog_entry > 0) {
 				client.printf("&d=%08X", timelog[0]);
 				for (int i = 1; i < timelog_entry; i++) {
 					client.printf("+%08X", timelog[i]);
@@ -382,10 +385,10 @@ static bool uploadData(){
 			for (int t = 0; t<20 && client.connected();t++) {
 				String line = client.readStringUntil('\n');
 				SDBGF("  [line %d] %s\n", t, line.c_str());
-				if (line == "HTTP/1.1 200 OK\r" || line == "HTTP/1.0 200 OK\r") {
+				if(line == "HTTP/1.1 200 OK\r" || line == "HTTP/1.0 200 OK\r") {
 					return true;
 				}
-				if (line == "\r") {
+				if(line == "\r") {
 					break;
 				}
 			}
@@ -398,19 +401,20 @@ static bool uploadData(){
 static bool sync() {
 	wlanSetup();
 
-	if (!wlanConnect())
+	if(!wlanConnect()) {
 		return false;
+	}
 
 	SDBGF("IP: %s\n", WiFi.localIP().toString().c_str());
 	delay(WLAN_RECONNECT_DELAY);
 
 	bool ret = true;
-	if (!updateTime()){
+	if(!updateTime()) {
 		ret = false;
 		SDBGLN("NTP fehlgeschlagen");
 	}
 
-	if (uploadData()) {
+	if(uploadData()) {
 		// Reset entries
 		timelog[0] = timelog[timelog_entry - 1];
 		timelog_entry = 1;
