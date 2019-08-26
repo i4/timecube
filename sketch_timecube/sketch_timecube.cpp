@@ -12,17 +12,27 @@
 #include "config.h"
 
 #ifdef SERIAL_DEBUG
-#define SDBG(MSG) Serial.print(MSG)
-#define SDBGF(MSG, ...) Serial.printf(MSG, __VA_ARGS__)
-#define SDBGLN(MSG) Serial.println(MSG)
+	#define SDBG(MSG) Serial.print(MSG)
+	#define SDBGF(MSG, ...) Serial.printf(MSG, __VA_ARGS__)
+	#define SDBGLN(MSG) Serial.println(MSG)
 #else
-#define SDBG(MSG)
-#define SDBGF(MSG, ...)
-#define SDBGLN(MSG)
+	#define SDBG(MSG)
+	#define SDBGF(MSG, ...)
+	#define SDBGLN(MSG)
 #endif
 
 
-void resetSystem();
+static void    resetSystem();
+static void    gotoDeepSleep(unsigned long long wakeupTime, bool force = false);
+static bool    sync();
+static bool    uploadData();
+static bool    updateTime();
+static bool    wlanConnect();
+static void    wlanSetup();
+static bool    checkSide(bool forceNewEntry = false);
+static uint8_t getStableSide();
+static uint8_t getSide();
+static uint8_t getBattery();
 
 
 const uint8_t side_translate[6] = SIDE_MAPPING;
@@ -41,6 +51,111 @@ static_assert(sizeof(time_t) == 4, "time_t Size");
 static Accelerometer accel = Accelerometer(ACCEL_CS_PIN);
 static hw_timer_t *timer = nullptr;
 
+
+void setup() {
+	#ifdef SERIAL_DEBUG
+	// Initialize Serial connection for debug output
+	Serial.begin(SERIAL_DEBUG);
+	#endif
+
+	// Wait 10 ms
+	delay(10);
+
+	SDBGF("Starting Watchdog (Bug Counter: %d)...\n", bug_counter);
+	#define DEINIT_TIMEOUT (60 * 1000 * 1000)
+	timer = timerBegin(0, 80, true);
+	timerAttachInterrupt(timer, &resetSystem, true);
+	timerAlarmWrite(timer, DEINIT_TIMEOUT, false);
+	timerAlarmEnable(timer);
+
+	// disable unused components on first start
+	if(0 == deep_sleep) {
+		SDBGLN("Powering down BT and ADC...");
+		esp_bt_controller_disable();
+		adc_power_off();
+	}
+
+
+	// Light blue LED (on FireBeetle)
+	pinMode(STATUS_LED_PIN, OUTPUT);
+	digitalWrite(STATUS_LED_PIN, HIGH);
+
+	// print current timestamp to serial (debugging)
+	{
+		time_t now;
+		time(&now);
+		SDBGF("Wakeup at %ld\n", now);
+	}
+
+	// Set up Accelerometer
+	if (!accel.begin()) {
+		SDBGLN("Beschleunigungssensor antwortet nicht.");
+	} else {
+		accel.setClickInterrupt(3, ACCEL_CLICK_THS);
+		accel.setMovementInterrupt();
+	}
+
+	// Get Wakeup source
+	esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+	SDBG("Wakeup reason: ");
+	switch(wakeup_reason) {
+		// Valid
+		case 0: SDBGLN("Reboot"); break;
+		case ESP_SLEEP_WAKEUP_EXT0:  SDBGLN("EXT0");  break;
+		case ESP_SLEEP_WAKEUP_TIMER: SDBGLN("Timer"); break;
+
+		// Invalid
+		case ESP_SLEEP_WAKEUP_EXT1:     SDBGLN("EXT1 (should not happen)");        break;
+		case ESP_SLEEP_WAKEUP_TOUCHPAD: SDBGLN("Touchpad (should not happen)");    break;
+		case ESP_SLEEP_WAKEUP_ULP:      SDBGLN("ULP (should not happen)");         break;
+		default : SDBGF("Unknown reason %d (should not happen)\n", wakeup_reason); break;
+	}
+
+	// Do we need an WLAN synchronization?
+	bool update = (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) || (wakeup_reason == ESP_SLEEP_WAKEUP_UNDEFINED) || (timelog_entry > TIMELOG_MAX);
+
+	// check tap
+	uint8_t click = accel.getClick();
+	if (click != 0 && (click & 0x30)){
+		SDBGLN("Synchronisiere aufgrund von Klopfen");
+		update = true;
+	}
+
+	// Timer wakeup
+	time_t now;
+	time(&now);
+	if (now >= wakeup) {
+		update = true;
+	}
+
+	// check side
+	checkSide(update);
+
+	// do update
+	if (update){
+		 SDBGF("Sync #%d\n", ++sync_counter);
+		 sync();
+
+		 // New Timer Wakeup
+		 time(&now);
+		 wakeup = now + SYNC_INTERVAL;
+
+		 // safety - if wlan connection was slow, lets check current side again, maybe it has been flipped meanwhile
+		 checkSide();
+	}
+
+	// calculate next wakeup
+	if (wakeup - now < 1) {
+		wakeup = now + 1;
+	}
+	gotoDeepSleep((wakeup - now) * 1000000ULL);
+}
+
+
+
+/*
+ * BATTERY-related functions
+ */
 const uint8_t UNKNOWN_BATTERY = 0xFF;
 static uint8_t getBattery() {
 	static uint8_t battery = UNKNOWN_BATTERY;
@@ -75,6 +190,10 @@ static uint8_t getBattery() {
 	return battery;
 }
 
+
+/*
+ * ACCELEROMETER-related functions
+ */
 static uint8_t getSide() {
 	uint8_t state = accel.getMovement();
 	for (uint8_t p = 0; p < 6; p++){
@@ -112,7 +231,7 @@ static uint8_t getStableSide(){
  *  \param forceNewEntry create a new entry in timelog even if the side hasnt changed
  *  \return true if a new entry was created
  */
-static bool checkSide(bool forceNewEntry = false){
+static bool checkSide(bool forceNewEntry){
 	uint8_t side = getStableSide();
 	if (timelog_entry < TIMELOG_MAX && (forceNewEntry || timelog_entry == 0 || side != (timelog[timelog_entry - 1] & 0x7))){
 		time_t timestamp;
@@ -125,6 +244,7 @@ static bool checkSide(bool forceNewEntry = false){
 	}
 	return false;
 }
+
 
 /*! \brief Connect to WLAN using given credentials
  */
@@ -150,6 +270,11 @@ static void wlanSetup(){
 	#endif
 	wifi_active = true;
 }
+
+
+/*
+ * NETWORK-related functions
+ */
 
 /*! \brief Wait for WLAN connection
  *  \return true on success, false if timed out
@@ -300,7 +425,7 @@ static bool sync() {
 	return ret;
 }
 
-static void gotoDeepSleep(unsigned long long wakeupTime, bool force = false) {
+static void gotoDeepSleep(unsigned long long wakeupTime, bool force) {
 	SDBGF("Preparing for Sleep #%d:\n", ++deep_sleep);
 
 	if(wifi_active && !force) {
@@ -326,106 +451,8 @@ static void gotoDeepSleep(unsigned long long wakeupTime, bool force = false) {
 	esp_deep_sleep_start();
 }
 
-void setup() {
-	#ifdef SERIAL_DEBUG
-	// Initialize Serial connection for debug output
-	Serial.begin(SERIAL_DEBUG);
-	#endif
 
-	// Wait 10 ms
-	delay(10);
-
-	SDBGF("Starting Watchdog (Bug Counter: %d)...\n", bug_counter);
-	#define DEINIT_TIMEOUT (60 * 1000 * 1000)
-	timer = timerBegin(0, 80, true);
-	timerAttachInterrupt(timer, &resetSystem, true);
-	timerAlarmWrite(timer, DEINIT_TIMEOUT, false);
-	timerAlarmEnable(timer);
-
-	// disable unused components on first start
-	if(0 == deep_sleep) {
-		SDBGLN("Powering down BT and ADC...");
-		esp_bt_controller_disable();
-		adc_power_off();
-	}
-
-
-	// Light blue LED (on FireBeetle)
-	pinMode(STATUS_LED_PIN, OUTPUT);
-	digitalWrite(STATUS_LED_PIN, HIGH);
-
-	// print current timestamp to serial (debugging)
-	{
-		time_t now;
-		time(&now);
-		SDBGF("Wakeup at %ld\n", now);
-	}
-
-	// Set up Accelerometer
-	if (!accel.begin()) {
-		SDBGLN("Beschleunigungssensor antwortet nicht.");
-	} else {
-		accel.setClickInterrupt(3, ACCEL_CLICK_THS);
-		accel.setMovementInterrupt();
-	}
-
-	// Get Wakeup source
-	esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
-	SDBG("Wakeup reason: ");
-	switch(wakeup_reason) {
-		// Valid
-		case 0: SDBGLN("Reboot"); break;
-		case ESP_SLEEP_WAKEUP_EXT0:  SDBGLN("EXT0");  break;
-		case ESP_SLEEP_WAKEUP_TIMER: SDBGLN("Timer"); break;
-
-		// Invalid
-		case ESP_SLEEP_WAKEUP_EXT1:     SDBGLN("EXT1 (should not happen)");        break;
-		case ESP_SLEEP_WAKEUP_TOUCHPAD: SDBGLN("Touchpad (should not happen)");    break;
-		case ESP_SLEEP_WAKEUP_ULP:      SDBGLN("ULP (should not happen)");         break;
-		default : SDBGF("Unknown reason %d (should not happen)\n", wakeup_reason); break;
-	}
-
-	// Do we need an WLAN synchronization?
-	bool update = (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) || (wakeup_reason == ESP_SLEEP_WAKEUP_UNDEFINED) || (timelog_entry > TIMELOG_MAX);
-
-	// check tap
-	uint8_t click = accel.getClick();
-	if (click != 0 && (click & 0x30)){
-		SDBGLN("Synchronisiere aufgrund von Klopfen");
-		update = true;
-	}
-
-	// Timer wakeup
-	time_t now;
-	time(&now);
-	if (now >= wakeup) {
-		update = true;
-	}
-
-	// check side
-	checkSide(update);
-
-	// do update
-	if (update){
-		 SDBGF("Sync #%d\n", ++sync_counter);
-		 sync();
-
-		 // New Timer Wakeup
-		 time(&now);
-		 wakeup = now + SYNC_INTERVAL;
-
-		 // safety - if wlan connection was slow, lets check current side again, maybe it has been flipped meanwhile
-		 checkSide();
-	}
-
-	// calculate next wakeup
-	if (wakeup - now < 1) {
-		wakeup = now + 1;
-	}
-	gotoDeepSleep((wakeup - now) * 1000000ULL);
-}
-
-void resetSystem() {
+static void resetSystem() {
 	++bug_counter;
 
 	SDBGLN("-=================-");
