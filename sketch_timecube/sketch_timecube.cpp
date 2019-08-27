@@ -39,8 +39,8 @@ static const char* formatTime(const time_t ts);
 
 const uint8_t side_translate[6] = SIDE_MAPPING;
 
-RTC_DATA_ATTR uint8_t timelog_entry = 0;
-RTC_DATA_ATTR tle     timelog[TIMELOG_MAX];
+RTC_DATA_ATTR uint16_t timelog_entry = 0;
+RTC_DATA_ATTR tle      timelog[TIMELOG_MAX];
 RTC_DATA_ATTR time_t wakeup = SYNC_INTERVAL;
 
 RTC_DATA_ATTR unsigned deep_sleep = 0;
