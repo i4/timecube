@@ -118,7 +118,7 @@ void setup() {
 	// check tap
 	uint8_t click = accel.getClick();
 	if(click != 0 && (click & 0x30)) {
-		SDBGLN("Synchronisiere aufgrund von Klopfen");
+		SDBGLN("Sync reason: Click");
 		update = true;
 	}
 
@@ -254,7 +254,7 @@ static bool checkSide(bool forceNewEntry) {
 		timestamp &= ~(0x7);
 		timestamp |= side;
 		timelog[timelog_entry++] = timestamp;
-		SDBGF("Derzeit akive Seite: %d\n", side);
+		SDBGF("Currently active side: %d\n", side);
 		return true;
 	}
 	return false;
@@ -315,7 +315,7 @@ static bool wlanConnect() {
 		}
 		SDBG(".");
 		if(c >= WLAN_RECONNECT_TRIES) {
-			SDBGLN("Keine WLAN Verbindung moeglich");
+			SDBGLN("[WLAN connection FAILED]");
 			return false;
 		}
 	}
@@ -384,7 +384,7 @@ static bool uploadData() {
 		if(client.connect(SYNC_HTTP_HOST, 80)) {
 			client.printf("POST /%04X%08X/upload HTTP/1.1\r\n", (uint16_t)(mac>>32), (uint32_t)mac);
 			client.print ("Host: " SYNC_HTTP_HOST "\r\n");
-			client.print ("User-Agent: i4Zeitwuerfel\r\n");
+			client.print ("User-Agent: i4timecube\r\n");
 			client.print ("Content-Type: application/x-www-form-urlencoded\r\n");
 			client.printf("Content-Length: %d\r\n\r\n", content_length);
 
@@ -408,7 +408,7 @@ static bool uploadData() {
 				}
 			}
 		} else
-			SDBGLN("Verbindungsprobleme");
+			SDBGLN("Connection failed");
 	}
 	return false;
 }
@@ -426,17 +426,17 @@ static bool sync() {
 	bool ret = true;
 	if(!updateTime()) {
 		ret = false;
-		SDBGLN("NTP fehlgeschlagen");
+		SDBGLN("NTP failed");
 	}
 
 	if(uploadData()) {
 		// Reset entries
 		timelog[0] = timelog[timelog_entry - 1];
 		timelog_entry = 1;
-		SDBGLN("HTTP Upload erfolgreich");
+		SDBGLN("HTTP upload successful");
 	} else {
 		ret = false;
-		SDBGLN("HTTP Upload fehlgeschlagen");
+		SDBGLN("HTTP upload FAILED");
 	}
 
 	WiFi.disconnect(true);
