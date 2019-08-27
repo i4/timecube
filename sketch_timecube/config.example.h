@@ -57,12 +57,9 @@
 #define STATUS_LED_PIN GPIO_NUM_2
 
 
-/* Min/Max Voltage = 3.3V/4.2V
- * Formel fuer ADC Wert:
- *    Voltage/(7.26V)*4095
- * -> ADC 1860/2375
- */
-// 100% Batterie
-#define BATTERY_MAX 2375
-// 0% Batterie
-#define BATTERY_MIN 1860
+// LiPo minimum/maximum voltage in mV
+#define BATTERY_MAX 4200
+#define BATTERY_MIN 3200
+
+// ADC default Vref (fallback in case no reference values in eFuse)
+#define DEFAULT_VREF 1100

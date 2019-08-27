@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <esp_adc_cal.h>
 #include <esp_bt.h>
 #include <esp_wifi.h>
 #include <esp_wpa2.h>
@@ -163,24 +164,38 @@ static uint8_t getBattery() {
 	if(UNKNOWN_BATTERY == battery) {
 		SDBGLN("Reading Battery State via ADC:");
 
+		SDBGLN(" * Characterizing ADC...");
+		esp_adc_cal_characteristics_t adc_chars = {};
+
+		switch(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, &adc_chars)) {
+			case ESP_ADC_CAL_VAL_EFUSE_VREF: SDBGLN("  -> via eFuse VRef"); break;
+			case ESP_ADC_CAL_VAL_EFUSE_TP:   SDBGLN("  -> via eFuse TP");   break;
+			default: SDBGLN("  -> via default value :/");
+		}
+
 		SDBGLN(" * Starting ADC...");
 		adc_power_on();
-		analogSetAttenuation(ADC_11db);
-		analogReadResolution(12);
+		adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11);
+		adc1_config_width(ADC_WIDTH_BIT_12);
 
 		SDBGLN(" * Read from ADC...");
-		int val = analogRead(A0);
+		int rawval = adc1_get_raw(ADC1_CHANNEL_0);
 
 		SDBGLN(" * Stopping ADC...");
 		adc_power_off();
 
-		SDBGF(" * Voltage from ADC: %d\n", val);
-		if(val > BATTERY_MAX) {
+		// Battery voltage is 2x the voltage measured here
+		// due to an on-board voltage divider used for measurement
+		uint32_t voltage = 2 * esp_adc_cal_raw_to_voltage(rawval, &adc_chars);
+		SDBGF("  Battery Voltage: %dmV\n", voltage);
+
+
+		if(voltage > BATTERY_MAX) {
 			battery = 100;
-		} else if(val < BATTERY_MIN) {
+		} else if(voltage < BATTERY_MIN) {
 			battery = 0;
 		} else {
-			battery = (val - BATTERY_MIN) * 100 / (BATTERY_MAX - BATTERY_MIN);
+			battery = (voltage - BATTERY_MIN) * 100 / (BATTERY_MAX - BATTERY_MIN);
 		}
 		SDBGF(" * Battery State from ADC: %d%%\n", battery);
 	} else {
