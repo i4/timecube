@@ -11,6 +11,7 @@
 
 #include "accelerometer.h"
 #include "config.h"
+#include "timelog.h"
 
 #ifdef SERIAL_DEBUG
 	#define SDBG(MSG) Serial.print(MSG)
@@ -23,20 +24,21 @@
 #endif
 
 
-static void    resetSystem();
-static void    gotoDeepSleep(unsigned long long wakeupTime, bool force = false);
-static bool    sync();
-static bool    uploadData();
-static bool    updateTime();
-static bool    wlanConnect();
-static void    wlanSetup();
-static bool    checkSide(bool forceNewEntry = false);
-static uint8_t getStableSide();
-static uint8_t getSide();
-static uint8_t getBattery();
-
+static void        resetSystem();
+static void        gotoDeepSleep(unsigned long long wakeupTime, bool force = false);
+static bool        sync();
+static bool        uploadData();
+static bool        updateTime();
+static bool        wlanConnect();
+static void        wlanSetup();
+static bool        checkSide(bool forceNewEntry = false);
+static uint8_t     getStableSide();
+static uint8_t     getSide();
+static uint8_t     getBattery();
+static const char* formatTime(const time_t ts);
 
 const uint8_t side_translate[6] = SIDE_MAPPING;
+
 RTC_DATA_ATTR uint8_t timelog_entry = 0;
 RTC_DATA_ATTR tle     timelog[TIMELOG_MAX];
 RTC_DATA_ATTR time_t wakeup = SYNC_INTERVAL;
@@ -47,7 +49,6 @@ RTC_DATA_ATTR unsigned bug_counter = 0;
 
 RTC_DATA_ATTR bool wifi_active = false;
 
-static_assert(sizeof(time_t) == 4, "time_t Size");
 
 static Accelerometer accel = Accelerometer(ACCEL_CS_PIN);
 static hw_timer_t *timer = nullptr;
@@ -85,7 +86,7 @@ void setup() {
 	{
 		time_t now;
 		time(&now);
-		SDBGF("Wakeup at %ld\n", now);
+		SDBGF("Wakeup at %s\n", formatTime(now));
 	}
 
 	// Set up Accelerometer
@@ -248,11 +249,11 @@ static uint8_t getStableSide() {
  */
 static bool checkSide(bool forceNewEntry) {
 	uint8_t side = getStableSide();
-	if (timelog_entry < TIMELOG_MAX && (forceNewEntry || timelog_entry == 0 || side != (timelog[timelog_entry - 1] & 0x7))){
-		time_t timestamp;
-		time(&timestamp);
-		timestamp &= ~(0x7);
-		timestamp |= side;
+	if(timelog_entry < TIMELOG_MAX && (forceNewEntry || timelog_entry == 0 || side != (timelog[timelog_entry - 1].get_side()))) {
+		tle timestamp;
+		timestamp.set_time_to_now();
+		timestamp.set_side(side);
+
 		timelog[timelog_entry++] = timestamp;
 		SDBGF("Currently active side: %d\n", side);
 		return true;
@@ -344,11 +345,10 @@ static bool updateTime() {
 
 		// Update entries
 		uint32_t delta = new_ts - old_ts;
-		delta &= ~(0x7);
 
 		SDBGF("Updating timelog entries with new time (delta: %ds)\n", delta);
 		for (int i = 0; i < timelog_entry; i++) {
-			timelog[i] += delta;
+			timelog[i].set_time(timelog[i].get_time() + delta);
 		}
 	}
 
@@ -369,12 +369,10 @@ static bool uploadData() {
 			SDBGF("Trying to send %d timelog entries (Content-Length: %d Bytes) to " SYNC_HTTP_HOST "\n", timelog_entry, content_length);
 			SDBGF(" MAC: %04X%08X\n",(uint16_t)(mac>>32), (uint32_t)mac);
 			SDBGF(" Battery: %d%%\n", battery);
-			SDBGF(" Current Time: %ld\n", now);
+			SDBGF(" Current Time: %s (UNIX Timestamp: %ld)\n", formatTime(now), now);
 			SDBGLN(" Data:");
-			for (int i = 0; i < timelog_entry; i++){
-				const uint8_t  side = timelog[i] & 0x7;
-				const uint32_t ts   = timelog[i] & ~(0x7);
-				SDBGF("  [%d] = at %d -> side %d\n", i, ts, side);
+			for (int i = 0; i < timelog_entry; i++) {
+				SDBGF("  [%d] Side %d at %s (UNIX Timestamp: %ld)\n", i, timelog[i].get_side(), formatTime(timelog[i].get_time()), timelog[i].get_time());
 			}
 		}
 		#endif
@@ -388,11 +386,11 @@ static bool uploadData() {
 			client.print ("Content-Type: application/x-www-form-urlencoded\r\n");
 			client.printf("Content-Length: %d\r\n\r\n", content_length);
 
-			client.printf("v=%02X&t=%08X", battery, now);
+			client.printf("v=%02X&t=%08lX", battery, now);
 			if(timelog_entry > 0) {
-				client.printf("&d=%08X", timelog[0]);
+				client.printf("&d=%08lX", static_cast<unsigned long>(timelog[0]));
 				for (int i = 1; i < timelog_entry; i++) {
-					client.printf("+%08X", timelog[i]);
+					client.printf("+%08lX", static_cast<unsigned long>(timelog[i]));
 				}
 			}
 
@@ -483,6 +481,13 @@ static void resetSystem() {
 	Serial.flush();
 #endif
 	gotoDeepSleep(5 * 1000ULL * 1000ULL, /* force = */ true);
+}
+
+static const char* formatTime(const time_t ts) {
+        static char buf[64];
+        struct tm *lt = localtime(&ts);
+        strftime(buf, sizeof(buf), "%d.%m.%Y %H:%M:%S", lt);
+        return buf;
 }
 
 void loop() { /* This is never going to be called due to deep sleep. */ }
