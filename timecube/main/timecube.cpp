@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <esp_adc_cal.h>
-#include <esp_bt.h>
+//#include <esp_bt.h>
 #include <esp_wifi.h>
 #include <esp_wpa2.h>
 #include <esp_sleep.h>
@@ -9,8 +9,8 @@
 #include <driver/rtc_io.h>
 #include <driver/adc.h>
 
+#include "../config.h"
 #include "accelerometer.h"
-#include "config.h"
 #include "timelog.h"
 
 #ifdef SERIAL_DEBUG
@@ -73,7 +73,7 @@ void setup() {
 	// disable unused components on first start
 	if(0 == deep_sleep) {
 		SDBGLN("Powering down BT and ADC...");
-		esp_bt_controller_disable();
+		//esp_bt_controller_disable();
 		adc_power_off();
 	}
 
