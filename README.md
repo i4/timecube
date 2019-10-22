@@ -18,6 +18,14 @@ Im Gegensatz zu einer reinen PC-Zeitferfassungsanwendung ist man bei dem Würfel
 
 Die Zeiterfassung soll dabei helfen das Verhältnis der verschiedenen Tätigkeiten besser zu überblicken (Lehre - Forschung). Es ist nicht Ziel eine exakte hochdetaillierte Erfassung zu erhalten.
 
+![Würfel Vorschau](images/cubes.jpg)
+
+
+Anleitung
+---------
+
+[Detaillierte und bebilderte Montageanleitung](MONTAGE.md)
+
 
 Grundüberlegungen
 -----------------
@@ -68,9 +76,3 @@ Revision 1
 ----------
 
 Wechsel auf [Firebeetle ESP32](https://www.dfrobot.com/product-1590.html) mit theoretisch 10μA Verbrauch im Tiefschlaf. In der Praxis ist der Gesamtverbrauch im Tiefschlaf <60μA.
-
-
-Montageanleitung
------------------
-
-siehe [hier](montage.md)

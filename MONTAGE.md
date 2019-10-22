@@ -1,8 +1,6 @@
 Montageanleitung
 -----------------
 
-![Würfel Vorschau](images/cubes.jpg)
-
 ### Gehäuse
 
 Der Würfel kann je nach Belieben aus Acryl oder Holz (Sperrholz) angefertig werden.
