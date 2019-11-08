@@ -157,7 +157,7 @@ var endRangeMoment = moment.unix(endRange);
 for (var cube in data['cube']) {
 	$('#cubes').append(
 		'<div class="cube">' +
-			'<div class="cubeid">' + data.cube[cube].id + ', Update ' + lastUpdate(data.cube[cube]) + '</div>' +
+			'<div class="cubeid">' + data.cube[cube].id + ' Update ' + lastUpdate(data.cube[cube]) + '</div>' +
 			'<div class="inline" id="voltagecurr-' + data.cube[cube].id + '"></div>' +
 			'<div class="inline" id="voltagehist-' + data.cube[cube].id + '"></div>' +
 		'</div>'
