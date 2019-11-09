@@ -26,6 +26,8 @@ Anleitung
 
 [Detaillierte und bebilderte Montageanleitung](MONTAGE.md)
 
+[Anleitung zum Bauen der Würfelsoftware](CODE_CUBE.md)
+
 
 Grundüberlegungen
 -----------------
