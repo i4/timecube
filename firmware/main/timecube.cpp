@@ -11,7 +11,7 @@
 #include <driver/rtc_io.h>
 #include <driver/adc.h>
 
-#include "../config.h"
+#include "config.h"
 #include "accelerometer.h"
 #include "timelog.h"
 

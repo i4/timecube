@@ -28,6 +28,22 @@ Anleitung
   * [Anleitung zum Bauen der Firmware für den Würfel](INSTALL.md)
 
 
+Lizenz
+------
+
+Der Zeitwürfel ist Freie Software: Sie können es unter den Bedingungen
+der GNU Affero General Public License, wie von der Free Software Foundation,
+Version 3 der Lizenz, weiter verteilen und/oder modifizieren.
+
+Der Zeitwürfel wird in der Hoffnung, dass es nützlich sein wird, aber
+OHNE JEDE GEWÄHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
+Siehe die [GNU Affero General Public License](LICENSE) für weitere Details.
+
+Sie sollten eine Kopie der GNU Affero General Public License zusammen mit diesem
+Programm erhalten haben. Wenn nicht, siehe https://www.gnu.org/licenses/ .
+
+
 Grundüberlegungen
 -----------------
 
