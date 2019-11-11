@@ -14,7 +14,6 @@ firmware:
     - export PATH="$PATH:$(readlink -f xtensa-esp32-elf/bin)"
   script:
     - mkdir -p firmware/build
-    - cp firmware/config.example.h firmware/config.h 
     - cd firmware/build
     - cmake ..
     - make
