@@ -24,9 +24,8 @@ Die Zeiterfassung soll dabei helfen das Verhältnis der verschiedenen Tätigkeit
 Anleitung
 ---------
 
-[Detaillierte und bebilderte Montageanleitung](MONTAGE.md)
-
-[Anleitung zum Bauen der Würfelsoftware](CODE_CUBE.md)
+  * [Detaillierte und bebilderte Montageanleitung](MONTAGE.md)
+  * [Anleitung zum Bauen der Firmware für den Würfel](INSTALL.md)
 
 
 Grundüberlegungen

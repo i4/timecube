@@ -1,0 +1,28 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+firmware:
+  image: debian:stable
+  before_script:
+    - ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt-get update -qq && apt-get install -y -qq make git wget libncurses-dev flex bison gperf python python-pip python-setuptools python-serial python-click python-cryptography python-future python-pyparsing python-pyelftools cmake ninja-build ccache
+    - git submodule update --init --recursive
+    - git clone --depth=1 --recursive --branch v3.3 https://github.com/espressif/esp-idf.git
+    - export IDF_PATH="$(readlink -f esp-idf)"
+    - wget -qO- https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar xvz
+    - export PATH="$PATH:$(readlink -f xtensa-esp32-elf/bin)"
+  script:
+    - mkdir -p firmware/build
+    - cp firmware/config.example.h firmware/config.h 
+    - cd firmware/build
+    - cmake ..
+    - make
+    - make flash || true
+  artifacts:
+    paths:
+      - firmware/build/bootloader/bootloader.bin
+      - firmware/build/partition_table/partition-table.bin
+      - firmware/build/timecube.bin
+      - firmware/components/arduino/tools/esptool.py
+

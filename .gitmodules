@@ -14,5 +14,5 @@
 	path = server/www/assets/apexcharts.js
 	url = https://github.com/apexcharts/apexcharts.js.git
 [submodule "sketch_timecube/arduino"]
-	path = timecube/components/arduino
+	path = firmware/components/arduino
 	url = https://github.com/espressif/arduino-esp32.git
