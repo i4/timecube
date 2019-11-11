@@ -1,7 +1,9 @@
+// Copyright (c) 2019 Laura Lawniczak, Christian Eichler, Bernhard Heinloth
+// SPDX-License-Identifier: AGPL-3.0-only
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <esp_adc_cal.h>
-//#include <esp_bt.h>
 #include <esp_wifi.h>
 #include <esp_wpa2.h>
 #include <esp_sleep.h>

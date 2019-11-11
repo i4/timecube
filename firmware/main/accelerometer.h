@@ -1,4 +1,33 @@
-/* Based on Adafruit_LIS3DH.h by K. Townsend / Limor Fried (Adafruit Industries) */
+/*! Based on Adafruit_LIS3DH.h
+ *  by K. Townsend / Limor Fried (Adafruit Industries), 
+ *  from https://github.com/adafruit/Adafruit_LIS3DH/
+ *  modified by Bernhard Heinloth (2019)
+ */
+/*!
+ *  @file Adafruit_LIS3DH.h
+ *
+ *  This is a library for the Adafruit LIS3DH Accel breakout board
+ *
+ *  Designed specifically to work with the Adafruit LIS3DH Triple-Axis
+ *Accelerometer
+ *	(+-2g/4g/8g/16g)
+ *
+ *  Pick one up today in the adafruit shop!
+ *  ------> https://www.adafruit.com/product/2809
+ *
+ *	This sensor communicates over I2C or SPI (our library code supports
+ *both) so you can share it with a bunch of other sensors on the same I2C bus.
+ *  There's an address selection pin so you can have two accelerometers share an
+ *I2C bus.
+ *
+ *  Adafruit invests time and resources providing this open source code,
+ *  please support Adafruit andopen-source hardware by purchasing products
+ *  from Adafruit!
+ *
+ *  K. Townsend / Limor Fried (Ladyada) - (Adafruit Industries).
+ *
+ *  BSD license, all text above must be included in any redistribution
+ */
 
 #if ARDUINO >= 100
  #include "Arduino.h"

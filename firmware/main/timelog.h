@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Laura Lawniczak, Christian Eichler, Bernhard Heinloth
+// SPDX-License-Identifier: AGPL-3.0-only
 
 typedef class __attribute__ ((packed)) tle {
 private:

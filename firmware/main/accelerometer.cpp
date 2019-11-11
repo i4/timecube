@@ -1,49 +1,84 @@
-/* Based on Adafruit_LIS3DH.h by K. Townsend / Limor Fried (Adafruit Industries) */
+/*! Based on Adafruit_LIS3DH.cpp
+ *  by K. Townsend / Limor Fried (Adafruit Industries), 
+ *  from https://github.com/adafruit/Adafruit_LIS3DH/
+ *  modified by Bernhard Heinloth (2019)
+ */
+/*!
+ * @file Adafruit_LIS3DH.cpp
+ *
+ *  @mainpage Adafruit LIS3DH breakout board
+ *
+ *  @section intro_sec Introduction
+ *
+ *  This is a library for the Adafruit LIS3DH Accel breakout board
+ *
+ *  Designed specifically to work with the Adafruit LIS3DH Accel breakout board.
+ *
+ *  Pick one up today in the adafruit shop!
+ *  ------> https://www.adafruit.com/product/2809
+ *
+ *  This sensor communicates over I2C or SPI (our library code supports both) so
+ * you can share it with a bunch of other sensors on the same I2C bus.
+ *
+ *  Adafruit invests time and resources providing this open source code,
+ *  please support Adafruit andopen-source hardware by purchasing products
+ *  from Adafruit!
+ *
+ *  @section author Author
+ *
+ *  K. Townsend / Limor Fried (Adafruit Industries)
+ *
+ *  @section license License
+ *
+ *  BSD license, all text above must be included in any redistribution
+ */
 
 #include "accelerometer.h"
 
-#define REG_STATUS1       0x07
-#define REG_OUTADC1_L     0x08
-#define REG_OUTADC1_H     0x09
-#define REG_OUTADC2_L     0x0A
-#define REG_OUTADC2_H     0x0B
-#define REG_OUTADC3_L     0x0C
-#define REG_OUTADC3_H     0x0D
-#define REG_INTCOUNT      0x0E
-#define REG_WHOAMI        0x0F
-#define REG_TEMPCFG       0x1F
-#define REG_CTRL1         0x20
-#define REG_CTRL2         0x21
-#define REG_CTRL3         0x22
-#define REG_CTRL4         0x23
-#define REG_CTRL5         0x24
-#define REG_CTRL6         0x25
-#define REG_REFERENCE     0x26
-#define REG_STATUS2       0x27
-#define REG_OUT_X_L       0x28
-#define REG_OUT_X_H       0x29
-#define REG_OUT_Y_L       0x2A
-#define REG_OUT_Y_H       0x2B
-#define REG_OUT_Z_L       0x2C
-#define REG_OUT_Z_H       0x2D
-#define REG_FIFOCTRL      0x2E
-#define REG_FIFOSRC       0x2F
-#define REG_INT1CFG       0x30
-#define REG_INT1SRC       0x31
-#define REG_INT1THS       0x32
-#define REG_INT1DUR       0x33
-#define REG_INT2CFG       0x34
-#define REG_INT2SRC       0x35
-#define REG_INT2THS       0x36
-#define REG_INT2DUR       0x37
-#define REG_CLICKCFG      0x38
-#define REG_CLICKSRC      0x39
-#define REG_CLICKTHS      0x3A
-#define REG_TIMELIMIT     0x3B
-#define REG_TIMELATENCY   0x3C
-#define REG_TIMEWINDOW    0x3D
-#define REG_ACTTHS        0x3E
-#define REG_ACTDUR        0x3F
+enum REG {
+	REG_STATUS1     = 0x07,
+	REG_OUTADC1_L   = 0x08,
+	REG_OUTADC1_H   = 0x09,
+	REG_OUTADC2_L   = 0x0A,
+	REG_OUTADC2_H   = 0x0B,
+	REG_OUTADC3_L   = 0x0C,
+	REG_OUTADC3_H   = 0x0D,
+	REG_INTCOUNT    = 0x0E,
+	REG_WHOAMI      = 0x0F,
+	REG_TEMPCFG     = 0x1F,
+	REG_CTRL1       = 0x20,
+	REG_CTRL2       = 0x21,
+	REG_CTRL3       = 0x22,
+	REG_CTRL4       = 0x23,
+	REG_CTRL5       = 0x24,
+	REG_CTRL6       = 0x25,
+	REG_REFERENCE   = 0x26,
+	REG_STATUS2     = 0x27,
+	REG_OUT_X_L     = 0x28,
+	REG_OUT_X_H     = 0x29,
+	REG_OUT_Y_L     = 0x2A,
+	REG_OUT_Y_H     = 0x2B,
+	REG_OUT_Z_L     = 0x2C,
+	REG_OUT_Z_H     = 0x2D,
+	REG_FIFOCTRL    = 0x2E,
+	REG_FIFOSRC     = 0x2F,
+	REG_INT1CFG     = 0x30,
+	REG_INT1SRC     = 0x31,
+	REG_INT1THS     = 0x32,
+	REG_INT1DUR     = 0x33,
+	REG_INT2CFG     = 0x34,
+	REG_INT2SRC     = 0x35,
+	REG_INT2THS     = 0x36,
+	REG_INT2DUR     = 0x37,
+	REG_CLICKCFG    = 0x38,
+	REG_CLICKSRC    = 0x39,
+	REG_CLICKTHS    = 0x3A,
+	REG_TIMELIMIT   = 0x3B,
+	REG_TIMELATENCY = 0x3C,
+	REG_TIMEWINDOW  = 0x3D,
+	REG_ACTTHS      = 0x3E,
+	REG_ACTDUR      = 0x3F
+};
 
 Accelerometer::Accelerometer(int8_t cspin) : _cs(cspin) { }
 
