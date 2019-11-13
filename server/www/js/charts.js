@@ -155,6 +155,11 @@ var endRangeMoment = moment.unix(endRange);
 
 // Würfelinformationen
 for (var cube in data['cube']) {
+	if(data.cube[cube].connection.length === 0) {
+		console.warn("Found empty cube, skipping...");
+		continue;
+	}
+
 	$('#cubes').append(
 		'<div class="cube">' +
 			'<div class="cubeid">' + data.cube[cube].id + ' Update ' + lastUpdate(data.cube[cube]) + '</div>' +

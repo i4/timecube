@@ -8,6 +8,9 @@ function newestUpdateIdx(data) {
 			idx = i;
 		}
 	}
+	if(undefined === idx) {
+		console.error("newestUpdateIdx: Failed to find any index!\nStuff will break later on...");
+	}
 	return idx;
 }
 
