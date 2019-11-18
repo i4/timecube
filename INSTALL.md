@@ -50,7 +50,7 @@ Die Konfiguration in der Datei `firmware/main/config.h` muss angepasst werden.
 Auf einem debianoiden Linux mit aktueller Version können die benötigten Komponenten wie folgt installiert werden:
 
     # Dieses Repo für Firmware rekursiv auschecken
-    git clone https://gitlab.cs.fau.de/heinloth/timecube.git
+    git clone https://gitlab.cs.fau.de/i4/timecube.git
     cd timecube
     git submodule update --init --recursive
     # Benötigte Pakete installeiren
@@ -65,7 +65,7 @@ Auf einem debianoiden Linux mit aktueller Version können die benötigten Kompon
 
 ### Bauen der Firmware
 
-Nach der Vorbereitung im `timecube`-Verzeichnis folgende Schritte ausführen:
+Nach der Vorbereitung im `firmware`-Verzeichnis folgende Schritte ausführen:
 
     mkdir build
     cd build
