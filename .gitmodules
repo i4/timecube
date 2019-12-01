@@ -1,17 +1,17 @@
-[submodule "server/www/assets/bootstrap"]
-	path = server/www/assets/bootstrap
+[submodule "server/frontend/public/assets/bootstrap"]
+	path = server/frontend/public/assets/bootstrap
 	url = https://github.com/twbs/bootstrap.git
-[submodule "server/www/assets/daterangepicker"]
-	path = server/www/assets/daterangepicker
+[submodule "server/frontend/public/assets/daterangepicker"]
+	path = server/frontend/public/assets/daterangepicker
 	url = https://github.com/dangrossman/daterangepicker.git
-[submodule "server/www/assets/moment"]
-	path = server/www/assets/moment
+[submodule "server/frontend/public/assets/moment"]
+	path = server/frontend/public/assets/moment
 	url = https://github.com/moment/moment.git
-[submodule "server/www/assets/Font-Awesome"]
-	path = server/www/assets/Font-Awesome
+[submodule "server/frontend/public/assets/Font-Awesome"]
+	path = server/frontend/public/assets/Font-Awesome
 	url = https://github.com/FortAwesome/Font-Awesome.git
-[submodule "server/www/assets/apexcharts.js"]
-	path = server/www/assets/apexcharts.js
+[submodule "server/frontend/public/assets/apexcharts.js"]
+	path = server/frontend/public/assets/apexcharts.js
 	url = https://github.com/apexcharts/apexcharts.js.git
 [submodule "sketch_timecube/arduino"]
 	path = firmware/components/arduino
