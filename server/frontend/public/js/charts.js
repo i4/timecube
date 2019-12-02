@@ -109,8 +109,8 @@ function updateCatYearHeatmap(series){
 }
 
 // Kategorien
-var minTime = NaN;
-var maxTime = NaN;
+window.minTime = NaN;
+window.maxTime = NaN;
 for (var series in data['series']) {
 	var sum = 0;
 	for (var j=0; j<data.series[series].data.length; j++) {

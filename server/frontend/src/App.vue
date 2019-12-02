@@ -191,9 +191,12 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import Dashboard from "./components/Dashboard.vue";
+import moment from 'moment';
 
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
+
+window.moment = moment;
 
 @Component({
 	components: {
@@ -202,8 +205,6 @@ import "bootstrap-vue/dist/bootstrap-vue.css";
 })
 export default class App extends Vue {
 	mounted(): void {
-		this.loadScript("assets/moment/min/moment.min.js");
-		this.loadScript("assets/moment/locale/de.js");
 		this.loadScript("assets/apexcharts.js/dist/apexcharts.min.js");
 		this.loadScript("assets/Font-Awesome/js/fontawesome.min.js");
 		this.loadScript("assets/daterangepicker/daterangepicker.js");
