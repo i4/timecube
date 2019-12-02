@@ -1,6 +1,3 @@
-[submodule "server/frontend/public/assets/bootstrap"]
-	path = server/frontend/public/assets/bootstrap
-	url = https://github.com/twbs/bootstrap.git
 [submodule "server/frontend/public/assets/daterangepicker"]
 	path = server/frontend/public/assets/daterangepicker
 	url = https://github.com/dangrossman/daterangepicker.git
