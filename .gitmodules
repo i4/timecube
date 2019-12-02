@@ -1,9 +1,6 @@
 [submodule "server/frontend/public/assets/daterangepicker"]
 	path = server/frontend/public/assets/daterangepicker
 	url = https://github.com/dangrossman/daterangepicker.git
-[submodule "server/frontend/public/assets/Font-Awesome"]
-	path = server/frontend/public/assets/Font-Awesome
-	url = https://github.com/FortAwesome/Font-Awesome.git
 [submodule "server/frontend/public/assets/apexcharts.js"]
 	path = server/frontend/public/assets/apexcharts.js
 	url = https://github.com/apexcharts/apexcharts.js.git

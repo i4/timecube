@@ -206,7 +206,6 @@ window.moment = moment;
 export default class App extends Vue {
 	mounted(): void {
 		this.loadScript("assets/apexcharts.js/dist/apexcharts.min.js");
-		this.loadScript("assets/Font-Awesome/js/fontawesome.min.js");
 		this.loadScript("assets/daterangepicker/daterangepicker.js");
 		this.loadScript("data.js");
 		this.loadScript("js/config.js");
