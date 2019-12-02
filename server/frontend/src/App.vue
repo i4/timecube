@@ -175,23 +175,17 @@
 			</div>
 		</div>
 
-		<footer class="container text-center">
-			<p class="text-muted credit">
-				<a href="https://gitlab.cs.fau.de/i4/timecube">
-					i4
-					<i class="fas fa-cube"></i>timecube
-				</a> &copy; 2019 Laura Lawniczak, Bernhard Heinloth &amp; Christian Eichler
-			</p>
-		</footer>
+		<Dashboard />
 
-		<dashboard />
+		<Footer />
 	</div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import Dashboard from "./components/Dashboard.vue";
-import moment from 'moment';
+import Footer from "./components/Footer.vue";
+import moment from "moment";
 
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
@@ -200,7 +194,8 @@ window.moment = moment;
 
 @Component({
 	components: {
-		Dashboard
+		Dashboard,
+		Footer
 	}
 })
 export default class App extends Vue {
@@ -226,112 +221,114 @@ export default class App extends Vue {
 
 <style>
 body {
-  background-color: #eff4f7;
-  color: #777;
+	background-color: #eff4f7;
+	color: #777;
 }
 
 .card-title {
-  font-weight: 600;
-  font-size: 1.1em;
-  color: #777;
-  margin-bottom: 38px;
+	font-weight: 600;
+	font-size: 1.1em;
+	color: #777;
+	margin-bottom: 38px;
 }
 
 .content-area {
-  max-width: 1600px;
-  margin: 0 auto;
+	max-width: 1600px;
+	margin: 0 auto;
 }
 
 #reportrange {
-  font-size: 0.9em;
-  cursor:pointer;
-  float: right;
-  margin: 8px;
+	font-size: 0.9em;
+	cursor: pointer;
+	float: right;
+	margin: 8px;
 }
 
 .header {
-  font-weight: 600;
-  font-size: 1.5em;
+	font-weight: 600;
+	font-size: 1.5em;
 }
 
-@media screen and (max-width:760px) {
-  #header { display: none; }
+@media screen and (max-width: 760px) {
+	#header {
+		display: none;
+	}
 }
 
 .card {
-  box-shadow: 0px 1px 22px -12px #607D8B;
-  background-color: #fff;
+	box-shadow: 0px 1px 22px -12px #607d8b;
+	background-color: #fff;
 }
 
 .navbar {
-  padding: 0;
+	padding: 0;
 }
 
 #head {
-  box-shadow: 0px 1px 22px -12px #607D8B;
-  background-color: #fff;
-  padding: 5px;
-  padding-left: 15px;
-  padding-right: 15px;
+	box-shadow: 0px 1px 22px -12px #607d8b;
+	background-color: #fff;
+	padding: 5px;
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
 .category {
-  position: relative;
-  margin: 10px
+	position: relative;
+	margin: 10px;
 }
 
-.category  a {
-  margin-left: 10px
+.category a {
+	margin-left: 10px;
 }
 
 .category label {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  position: absolute;
-  top: 3px;
-  left: 0;
-  border-radius: 4px;
+	width: 20px;
+	height: 20px;
+	cursor: pointer;
+	position: absolute;
+	top: 3px;
+	left: 0;
+	border-radius: 4px;
 }
 
 .category label:after {
-  content: '';
-  width: 9px;
-  height: 5px;
-  position: absolute;
-  top: 7px;
-  left: 5px;
-  border: 3px solid #fcfff4;
-  border-top: none;
-  border-right: none;
-  background: transparent;
-  opacity: 0;
-  -webkit-transform: rotate(-45deg);
-  transform: rotate(-45deg);
+	content: "";
+	width: 9px;
+	height: 5px;
+	position: absolute;
+	top: 7px;
+	left: 5px;
+	border: 3px solid #fcfff4;
+	border-top: none;
+	border-right: none;
+	background: transparent;
+	opacity: 0;
+	-webkit-transform: rotate(-45deg);
+	transform: rotate(-45deg);
 }
 
 .category label:hover::after {
-  opacity: 0.3;
+	opacity: 0.3;
 }
 
-.category input[type=checkbox] {
-  visibility: hidden;
+.category input[type="checkbox"] {
+	visibility: hidden;
 }
 
-.category input[type=checkbox]:checked + label:after {
-  opacity: 1;
+.category input[type="checkbox"]:checked + label:after {
+	opacity: 1;
 }
 
 .category div.icon {
-  display: inline-block;
-  width: 2em;
-  padding-left:3px;
-  text-align: center;
+	display: inline-block;
+	width: 2em;
+	padding-left: 3px;
+	text-align: center;
 }
 
 .category a.label {
-	margin:0px;
-	padding:0px;
+	margin: 0px;
+	padding: 0px;
 }
 
 .category span.duration {
@@ -342,10 +339,5 @@ body {
 .inline {
 	display: inline-block;
 	vertical-align: middle;
-}
-
-.credit {
-	font-size: 0.7em;
-	padding:20px;
 }
 </style>
