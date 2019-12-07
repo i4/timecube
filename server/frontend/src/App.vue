@@ -186,13 +186,18 @@ import { Component, Vue } from "vue-property-decorator";
 import Dashboard from "./components/Dashboard.vue";
 import Footer from "./components/Footer.vue";
 import moment from "moment";
+import Apex from "apexcharts";
+import ApexCharts from "apexcharts";
 require("daterangepicker");
 
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 import "daterangepicker/daterangepicker.css";
+import "apexcharts/dist/apexcharts.css";
 
 window.moment = moment;
+window.Apex = Apex;
+window.ApexCharts = ApexCharts;
 
 @Component({
 	components: {
@@ -202,7 +207,6 @@ window.moment = moment;
 })
 export default class App extends Vue {
 	mounted(): void {
-		this.loadScript("assets/apexcharts.js/dist/apexcharts.min.js");
 		this.loadScript("data.js");
 		this.loadScript("js/config.js");
 		this.loadScript("js/helper.js");
