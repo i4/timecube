@@ -16,6 +16,9 @@ library.add(faCalendar);
 library.add(faCaretDown);
 library.add(faCube);
 
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap/dist/js/bootstrap.bundle.js";
+
 dom.watch()
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 

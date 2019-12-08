@@ -190,8 +190,6 @@ import Apex from "apexcharts";
 import ApexCharts from "apexcharts";
 require("daterangepicker");
 
-import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap-vue/dist/bootstrap-vue.css";
 import "daterangepicker/daterangepicker.css";
 import "apexcharts/dist/apexcharts.css";
 
