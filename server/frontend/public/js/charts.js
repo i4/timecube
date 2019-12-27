@@ -17,11 +17,11 @@ function renderChart(elementId, options){
 function updateCat(series){
 	if (data['series'][series].hide == document.getElementById('cat-' + series).checked){
 		data['series'][series].hide = !document.getElementById('cat-' + series).checked;
-		refreshCharts();
+		// refreshCharts();
 	}
 }
 
-function refreshCharts(){
+function refreshCharts(startRange, endRange){
 	chartOverviewTotal.updateOptions(generateDayTimeBar(data, startRange, endRange));
 	chartOverviewSum.updateOptions(generateDaySum(data, startRange, endRange));
 	chartSummary.updateOptions(generateWorkCircle(data, startRange, endRange));
@@ -563,6 +563,10 @@ for (var year = new Date(minTime * 1000).getFullYear() - 1; year <= new Date().g
 	pickerRanges["WiSe " + y + '/' + (y + 1)] = [moment(year + "-10-01T00:00:00"), moment((year + 1) + "-04-01T00:00:00")]
 }
 
+services.dateRange.getDateRange().subscribe(dateRange => {
+	refreshCharts(dateRange.start.unix(), dateRange.end.unix());
+});
+
 $('#reportrange').daterangepicker({
 	"showDropdowns": true,
 	"showWeekNumbers": true,
@@ -589,14 +593,12 @@ $('#reportrange').daterangepicker({
 	"endDate": endRangeMoment
 }, function(start, end, label) {
 	startRangeMoment = start;
-	startRange = start.unix();
 	endRangeMoment = end;
-	endRange = end.unix();
 	if (label != "Datumsauswahl")
 		$('#reportrange span').html(label + ' (' + startRangeMoment.format('D. MMMM YYYY') + ' — ' + endRangeMoment.format('D. MMMM YYYY') +')');
 	else
 		$('#reportrange span').html(startRangeMoment.format('D. MMMM YYYY') + ' — ' + endRangeMoment.format('D. MMMM YYYY'));
-	refreshCharts();
+	services.dateRange.setDateRange({start: start, end: end});
 });
 
 daterangeCallback(startRangeMoment, endRangeMoment);

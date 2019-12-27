@@ -19,6 +19,7 @@
     "jquery": "^3.4.1",
     "moment": "^2.24.0",
     "popper.js": "^1.16.0",
+    "rxjs": "^6.5.4",
     "vue": "^2.6.10",
     "vue-apexcharts": "^1.5.1",
     "vue-class-component": "^7.0.2",
