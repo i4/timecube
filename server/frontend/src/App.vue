@@ -4,11 +4,7 @@
 			<div style="width: 100%" class="content-area">
 				<a class="navbar-brand" href="#" id="header">Zeiterfassungswürfel</a>
 
-				<div id="reportrange">
-					<i class="fa fa-calendar"></i>&nbsp;
-					<span></span>
-					<i class="fa fa-caret-down"></i>
-				</div>
+				<date-range-picker />
 				<!--div class="collapse navbar-collapse">
 			<ul class="navbar-nav mr-auto mt-2 mt-lg-0">
 				<li class="nav-item active">
@@ -185,6 +181,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import Dashboard from "./components/Dashboard.vue";
 import Footer from "./components/Footer.vue";
+import DateRangePicker from "./components/DateRangePicker.vue";
 import moment from "moment";
 import Apex from "apexcharts";
 import ApexCharts from "apexcharts";
@@ -192,6 +189,8 @@ require("daterangepicker");
 
 import "daterangepicker/daterangepicker.css";
 import "apexcharts/dist/apexcharts.css";
+
+Vue.component('date-range-picker', DateRangePicker);
 
 window.moment = moment;
 window.Apex = Apex;

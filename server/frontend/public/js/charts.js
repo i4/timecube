@@ -541,64 +541,6 @@ var chartSumBar = renderChart("chart-sum-bar", generateBar(data, startRange, end
 	}
 }));
 
-
-function daterangeCallback(startRangeMoment, endRangeMoment) {
-	$('#reportrange span').html(startRangeMoment.format('D. MMMM YYYY') + ' — ' + endRangeMoment.format('D. MMMM YYYY'));
-}
-
-var pickerRanges = {
-	'Alles' : [startRangeMoment, endRangeMoment],
-	'Vergangene 30 Tage': [moment().subtract(29, 'days'), moment()],
-	'Vergangene 7 Tage': [moment().subtract(6, 'days'), moment()],
-	'Letzte Woche': [moment().subtract(1, 'week').startOf('week'), moment().subtract(1, 'week').endOf('week')],
-	'Diese Woche': [moment().startOf('week'), moment().endOf('week')],
-	'Letzter Monat': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-	'Dieser Monat': [moment().startOf('month'), moment().endOf('month')],
-	'Letztes Jahr': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
-	'Dieses Jahr': [moment().startOf('year'), moment().endOf('year')],
-};
-for (var year = new Date(minTime * 1000).getFullYear() - 1; year <= new Date().getFullYear(); year++ ){
-	var y = year % 100;
-	pickerRanges["SoSe " + y] = [moment(year + "-04-01T00:00:00"), moment(year + "-10-01T00:00:00")]
-	pickerRanges["WiSe " + y + '/' + (y + 1)] = [moment(year + "-10-01T00:00:00"), moment((year + 1) + "-04-01T00:00:00")]
-}
-
 services.dateRange.getDateRange().subscribe(dateRange => {
 	refreshCharts(dateRange.start.unix(), dateRange.end.unix());
 });
-
-$('#reportrange').daterangepicker({
-	"showDropdowns": true,
-	"showWeekNumbers": true,
-	"timePicker": true,
-	"timePicker24Hour": true,
-	ranges: pickerRanges,
-	"locale": {
-		"format": "YYYY-MM-DD",
-		"separator": " — ",
-		"applyLabel": "Auswählen",
-		"cancelLabel": "Abbrechen",
-		"fromLabel": "Von",
-		"toLabel": "Bis",
-		"customRangeLabel": "Datumsauswahl",
-		"weekLabel": "W",
-		"daysOfWeek": weekdayShort,
-		"monthNames": monthName,
-		"firstDay": 1
-	},
-	"alwaysShowCalendars": false,
-	"minDate": moment.unix(minTime),
-	"maxDate": moment(),
-	"startDate": startRangeMoment,
-	"endDate": endRangeMoment
-}, function(start, end, label) {
-	startRangeMoment = start;
-	endRangeMoment = end;
-	if (label != "Datumsauswahl")
-		$('#reportrange span').html(label + ' (' + startRangeMoment.format('D. MMMM YYYY') + ' — ' + endRangeMoment.format('D. MMMM YYYY') +')');
-	else
-		$('#reportrange span').html(startRangeMoment.format('D. MMMM YYYY') + ' — ' + endRangeMoment.format('D. MMMM YYYY'));
-	services.dateRange.setDateRange({start: start, end: end});
-});
-
-daterangeCallback(startRangeMoment, endRangeMoment);
