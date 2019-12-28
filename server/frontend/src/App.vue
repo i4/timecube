@@ -62,18 +62,11 @@
 
 				<div class="row">
 					<div class="col-md-3 mt-3 mb-3">
-						<div class="card">
-							<div class="card-body">
-								<a class="card-title">Kategorien</a>
-								<div id="categories"></div>
-							</div>
-						</div>
+						<category-panel />
 					</div>
 
 					<div class="col-md-3 mt-3 mb-3">
-						<div class="card">
 						<sum-pie-panel />
-					</div>
 					</div>
 
 					<div class="col-md-6 mt-3 mb-3">
@@ -177,6 +170,7 @@ import Footer from "./components/Footer.vue";
 import DateRangePicker from "./components/DateRangePicker.vue";
 import CubePanel from './components/panels/CubePanel.vue';
 import SumPiePanel from './components/panels/SumPiePanel.vue';
+import CategoryPanel from './components/panels/CategoryPanel.vue';
 import moment from "moment";
 import Apex from "apexcharts";
 import ApexCharts from "apexcharts";
@@ -188,6 +182,7 @@ import "apexcharts/dist/apexcharts.css";
 Vue.component('date-range-picker', DateRangePicker);
 Vue.component('cube-panel', CubePanel);
 Vue.component('sum-pie-panel', SumPiePanel);
+Vue.component('category-panel', CategoryPanel);
 
 
 window.moment = moment;
@@ -270,70 +265,6 @@ body {
 	padding: 5px;
 	padding-left: 15px;
 	padding-right: 15px;
-}
-
-.category {
-	position: relative;
-	margin: 10px;
-}
-
-.category a {
-	margin-left: 10px;
-}
-
-.category label {
-	width: 20px;
-	height: 20px;
-	cursor: pointer;
-	position: absolute;
-	top: 3px;
-	left: 0;
-	border-radius: 4px;
-}
-
-.category label:after {
-	content: "";
-	width: 9px;
-	height: 5px;
-	position: absolute;
-	top: 7px;
-	left: 5px;
-	border: 3px solid #fcfff4;
-	border-top: none;
-	border-right: none;
-	background: transparent;
-	opacity: 0;
-	-webkit-transform: rotate(-45deg);
-	transform: rotate(-45deg);
-}
-
-.category label:hover::after {
-	opacity: 0.3;
-}
-
-.category input[type="checkbox"] {
-	visibility: hidden;
-}
-
-.category input[type="checkbox"]:checked + label:after {
-	opacity: 1;
-}
-
-.category div.icon {
-	display: inline-block;
-	width: 2em;
-	padding-left: 3px;
-	text-align: center;
-}
-
-.category a.label {
-	margin: 0px;
-	padding: 0px;
-}
-
-.category span.duration {
-	font-size: 0.7em;
-	font-style: italic;
 }
 
 .inline {

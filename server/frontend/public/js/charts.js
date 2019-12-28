@@ -128,16 +128,6 @@ for (var series in data['series']) {
 		}
 	}
 
-	$('#categories').append(
-		'<div class="category">' +
-			'<input type="checkbox" ' + (data.series[series].hide ? "" : "checked") + ' name="cat-' + series + '" id="cat-' + series + '" value="1" onchange="updateCat(' + series + ')">' +
-			'<label for="cat-' + series + '" style="background-color:' + data.series[series].color  + ';"></label>' +
-			'<div class="icon"><span class="fas ' + data.series[series].icon + '"></span></div>' +
-			'<a class="label disabled">' + data.series[series].task + '</a>' +
-			'&nbsp;<span class="duration">(gesamt ' + Math.round(sum / 3600) + ' h)</span>' +
-		'</div>'
-	);
-
 	$('#week-heatmap-dropdown-set').append(
 		'<a class="dropdown-item" href="javascript:updateCatWeekHeatmap(' + series + ');"><span style="color:' + data.series[series].color  + ';">⬤</span>&nbsp;' + data.series[series].task + '</a>'
 	);
