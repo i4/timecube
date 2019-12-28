@@ -26,7 +26,6 @@ function refreshCharts(startRange, endRange){
 	chartOverviewSum.updateOptions(generateDaySum(data, startRange, endRange));
 	chartSummary.updateOptions(generateWorkCircle(data, startRange, endRange));
 	chartWeekHeatMap.updateOptions(generateWeekHeatmap(data, startRange, endRange));
-	chartSumPie.updateOptions(generatePie(data, startRange, endRange));
 	chartSumBar.updateOptions(generateBar(data, startRange, endRange));
 }
 
@@ -154,6 +153,7 @@ var endRange = maxTime;
 var endRangeMoment = moment.unix(endRange);
 
 services.cube.setCubes(data.cube);
+services.series.setSeries(data.series);
 
 $('#week-heatmap-dropdown-set').append('<div class="dropdown-divider"></div><a class="dropdown-item" href="javascript:updateCatWeekHeatmap(NaN);"><b>Gesamt</b></a>');
 $('#year-heatmap-dropdown-set').append('<div class="dropdown-divider"></div><a class="dropdown-item" href="javascript:updateCatYearHeatmap(NaN);"><b>Gesamt</b></a>');
@@ -375,56 +375,6 @@ var chartWeekHeatMap = renderChart("chart-week-heatmap", generateWeekHeatmap(dat
 	yaxis: {
 		reversed: true,
 	}
-}));
-
-var chartSumPie = renderChart("chart-sum-pie", generatePie(data, startRange, endRange, {
-	plotOptions: {
-		pie: {
-			donut: {
-				labels: {
-					show: true,
-					name: {
-						show:true,
-					},
-					value: {
-						show:true,
-						formatter: formatHourShort,
-					},
-					total : {
-						show:true,
-						label: 'Gesamt',
-						color: '#111',
-						formatter: formatTotalHourShort,
-					}
-				}
-			}
-		}
-	},
-	chart: {
-		height: 350,
-		type: 'donut',
-	},
-	legend: {
-		show: false
-	},
-	name : {
-		show: true,
-	},
-	title: {
-		align : "left",
-	},
-	yaxis: {
-		labels: {
-			formatter: formatHour,
-		},
-	},
-	dataLabels: {
-		enabled: true,
-		formatter: formatPercent,
-	},
-	colors: [],
-	series: [],
-	labels: [],
 }));
 
 var chartSumBar = renderChart("chart-sum-bar", generateBar(data, startRange, endRange, {

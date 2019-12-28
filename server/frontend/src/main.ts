@@ -8,10 +8,12 @@ import Vue from "vue";
 import App from "./App.vue";
 import { DateRangeService } from './services/DateRangeService';
 import { CubeService } from './services/CubeService';
+import { SeriesService } from './services/SeriesService';
 
 export const services = {
   dateRange: new DateRangeService(),
-  cube: new CubeService()
+  cube: new CubeService(),
+  series: new SeriesService()
 }
 
 library.add(faQuestionCircle);

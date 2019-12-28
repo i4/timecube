@@ -34,6 +34,7 @@ import { services } from "@/main";
 import { CubeService } from "@/services/CubeService";
 import { tap } from "rxjs/operators";
 import * as moment from "moment";
+import Util from "@/Util";
 
 @Component({
 	components: {
@@ -70,7 +71,7 @@ export default class CubePanel extends Vue {
 							color: "#888"
 						},
 						value: {
-							formatter: this.formatPercent,
+							formatter: Util.formatPercent,
 							offsetY: -3,
 							color: "#111",
 							fontSize: "16px",
@@ -116,14 +117,10 @@ export default class CubePanel extends Vue {
 					format: "d. MMMM yyyy, HH:mm"
 				},
 				y: {
-					formatter: this.formatPercent
+					formatter: Util.formatPercent
 				}
 			}
 		};
-	}
-
-	formatPercent(val: number): string {
-		return Math.round(val) + "%";
 	}
 
 	lastVoltage(cube: Cube): number {
