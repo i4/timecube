@@ -25,11 +25,7 @@
 			<div class="container-fluid">
 				<div class="row">
 					<div class="col-md-4 mt-3 mb-3">
-						<div class="card">
-							<div id="cubes" class="card-body">
-								<a class="card-title">Würfel</a>
-							</div>
-						</div>
+						<cube-panel />
 					</div>
 
 					<div class="col-md-3 mt-3 mb-3">
@@ -182,6 +178,7 @@ import { Component, Vue } from "vue-property-decorator";
 import Dashboard from "./components/Dashboard.vue";
 import Footer from "./components/Footer.vue";
 import DateRangePicker from "./components/DateRangePicker.vue";
+import CubePanel from './components/panels/CubePanel.vue';
 import moment from "moment";
 import Apex from "apexcharts";
 import ApexCharts from "apexcharts";
@@ -191,6 +188,8 @@ import "daterangepicker/daterangepicker.css";
 import "apexcharts/dist/apexcharts.css";
 
 Vue.component('date-range-picker', DateRangePicker);
+Vue.component('cube-panel', CubePanel);
+
 
 window.moment = moment;
 window.Apex = Apex;

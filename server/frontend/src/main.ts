@@ -7,9 +7,11 @@ import $ from 'jquery';
 import Vue from "vue";
 import App from "./App.vue";
 import { DateRangeService } from './services/DateRangeService';
+import { CubeService } from './services/CubeService';
 
 export const services = {
-  dateRange: new DateRangeService()
+  dateRange: new DateRangeService(),
+  cube: new CubeService()
 }
 
 library.add(faQuestionCircle);

@@ -173,26 +173,6 @@ function formatHourMinute(val) {
 
 
 // Chart generation
-
-function generateVoltageCircle(data, options = { series: [] }) {
-	options.series = [ data.connection[ newestUpdateIdx(data)].voltage ];
-    return options;
-}
-
-
-function generateVoltageLine(data, options = { series: [] }){
-	options.series = [{
-		name: "Batterie",
-		data: []
-	}];
-
-	for (var i=0; i<data.connection.length; i++)
-		options.series[0].data.push([data.connection[i].time*1000,data.connection[i].voltage]);
-
-	return options;
-}
-
-
 function generateBar(data, start, end, options = {}) {
 	options.colors = [];
 	options.series = [{
