@@ -22,11 +22,10 @@ function updateCat(series){
 }
 
 function refreshCharts(startRange, endRange){
-	chartOverviewTotal.updateOptions(generateDayTimeBar(data, startRange, endRange));
-	chartOverviewSum.updateOptions(generateDaySum(data, startRange, endRange));
-	chartSummary.updateOptions(generateWorkCircle(data, startRange, endRange));
-	chartWeekHeatMap.updateOptions(generateWeekHeatmap(data, startRange, endRange));
-	chartSumBar.updateOptions(generateBar(data, startRange, endRange));
+	// chartOverviewTotal.updateOptions(generateDayTimeBar(data, startRange, endRange));
+	// chartOverviewSum.updateOptions(generateDaySum(data, startRange, endRange));
+	// chartWeekHeatMap.updateOptions(generateWeekHeatmap(data, startRange, endRange));
+	// chartSumBar.updateOptions(generateBar(data, startRange, endRange));
 }
 
 function setOverviewTotalStackType(type){
@@ -256,63 +255,6 @@ var chartOverviewSum = renderChart("chart-overview-sum", generateDaySum(data, st
 	}
 }));
 
-var chartSummary = renderChart("chart-work", generateWorkCircle(data, startRange, endRange, {
-	chart: {
-		width: 350,
-		height: 300,
-		type: 'radialBar',
-	},
-	plotOptions: {
-		radialBar: {
-			size: 150,
-			inverseOrder: true,
-			startAngle: -180,
-			offsetX: -40,
-			endAngle: 90,
-			hollow :{
-				size: "30%",
-			},
-			track: {
-				show: true,
-				margin: 10,
-			},
-
-			dataLabels: {
-				value: {
-					formatter: function(val) {
-						return Math.round(val) + "%";
-					},
-				},
-				total: {
-					show: false,
-				},
-			},
-		},
-	},
-	stroke: {
-		lineCap: 'round',
-	},
-	legend: {
-		show: true,
-		floating: true,
-		position: 'left',
-		offsetX: 110,
-		offsetY: 173,
-		labels: {
-			useSeriesColors: true,
-		},
-		markers: {
-			width: 0,
-			height: 0,
-		},
-		formatter: function(seriesName, opts) {
-			return seriesName + ": " + opts.w.config.timetext[opts.seriesIndex];
-		},
-		itemMargin: {
-			horizontal: 0,
-		}
-	},
-}));
 var chartYearHeatMap = renderChart("chart-year-heatmap",  generateYearHeatmap(data, NaN, {
 	chart: {
 		height: 350,

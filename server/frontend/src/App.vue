@@ -29,12 +29,7 @@
 					</div>
 
 					<div class="col-md-3 mt-3 mb-3">
-						<div class="card">
-							<div class="card-body">
-								<a class="card-title">Arbeitszeit</a>
-								<div id="chart-work"></div>
-							</div>
-						</div>
+						<work-panel />
 					</div>
 
 					<div class="col-md-5 mt-3 mb-3">
@@ -171,6 +166,7 @@ import DateRangePicker from "./components/DateRangePicker.vue";
 import CubePanel from './components/panels/CubePanel.vue';
 import SumPiePanel from './components/panels/SumPiePanel.vue';
 import CategoryPanel from './components/panels/CategoryPanel.vue';
+import WorkPanel from './components/panels/work-panel.vue';
 import moment from "moment";
 import Apex from "apexcharts";
 import ApexCharts from "apexcharts";
@@ -183,6 +179,7 @@ Vue.component('date-range-picker', DateRangePicker);
 Vue.component('cube-panel', CubePanel);
 Vue.component('sum-pie-panel', SumPiePanel);
 Vue.component('category-panel', CategoryPanel);
+Vue.component('work-panel', WorkPanel);
 
 
 window.moment = moment;
