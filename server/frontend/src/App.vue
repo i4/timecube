@@ -33,25 +33,7 @@
 					</div>
 
 					<div class="col-md-5 mt-3 mb-3">
-						<div class="card">
-							<div class="card-body">
-								<a
-									href="#"
-									class="card-title dropdown-toggle"
-									role="button"
-									id="week-heatmap-dropdown"
-									data-toggle="dropdown"
-									aria-haspopup="true"
-									aria-expanded="false"
-								>Wöchentliche Verteilung</a>
-								<div
-									class="dropdown-menu"
-									id="week-heatmap-dropdown-set"
-									aria-labelledby="week-heatmap-dropdown"
-								></div>
-								<div id="chart-week-heatmap"></div>
-							</div>
-						</div>
+						<week-heatmap-panel />
 					</div>
 				</div>
 
@@ -170,6 +152,7 @@ require("daterangepicker");
 
 import "daterangepicker/daterangepicker.css";
 import "apexcharts/dist/apexcharts.css";
+import WeekHeatmapPanel from './components/panels/week-heatmap-panel.vue';
 
 Vue.component('date-range-picker', DateRangePicker);
 Vue.component('cube-panel', CubePanel);
@@ -177,6 +160,7 @@ Vue.component('sum-pie-panel', SumPiePanel);
 Vue.component('category-panel', CategoryPanel);
 Vue.component('work-panel', WorkPanel);
 Vue.component('sum-bar-panel', SumBarPanel);
+Vue.component('week-heatmap-panel', WeekHeatmapPanel);
 
 
 window.moment = moment;

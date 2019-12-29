@@ -24,7 +24,6 @@ function updateCat(series){
 function refreshCharts(startRange, endRange){
 	// chartOverviewTotal.updateOptions(generateDayTimeBar(data, startRange, endRange));
 	// chartOverviewSum.updateOptions(generateDaySum(data, startRange, endRange));
-	// chartWeekHeatMap.updateOptions(generateWeekHeatmap(data, startRange, endRange));
 }
 
 function setOverviewTotalStackType(type){
@@ -126,9 +125,6 @@ for (var series in data['series']) {
 		}
 	}
 
-	$('#week-heatmap-dropdown-set').append(
-		'<a class="dropdown-item" href="javascript:updateCatWeekHeatmap(' + series + ');"><span style="color:' + data.series[series].color  + ';">⬤</span>&nbsp;' + data.series[series].task + '</a>'
-	);
 	$('#year-heatmap-dropdown-set').append(
 		'<a class="dropdown-item" href="javascript:updateCatYearHeatmap(' + series + ');"><span style="color:' + data.series[series].color  + ';">⬤</span>&nbsp;' + data.series[series].task + '</a>'
 	);
@@ -143,7 +139,6 @@ var endRangeMoment = moment.unix(endRange);
 services.cube.setCubes(data.cube);
 services.series.setSeries(data.series);
 
-$('#week-heatmap-dropdown-set').append('<div class="dropdown-divider"></div><a class="dropdown-item" href="javascript:updateCatWeekHeatmap(NaN);"><b>Gesamt</b></a>');
 $('#year-heatmap-dropdown-set').append('<div class="dropdown-divider"></div><a class="dropdown-item" href="javascript:updateCatYearHeatmap(NaN);"><b>Gesamt</b></a>');
 
 
@@ -278,33 +273,6 @@ var chartYearHeatMap = renderChart("chart-year-heatmap",  generateYearHeatmap(da
 		x: {
 			show: true,
 		},
-	}
-}));
-var chartWeekHeatMap = renderChart("chart-week-heatmap", generateWeekHeatmap(data, startRange, endRange, NaN, {
-	chart: {
-		height: 350,
-		type: 'heatmap',
-		toolbar: {
-			show: false,
-		},
-	},
-	title: {
-		align: 'center',
-		floating: true,
-		style: {}
-	},
-	dataLabels: {
-		enabled: false
-	},
-	tooltip: {
-		y: {
-			formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
-				return Math.round(value / w.globals.seriesTotals.reduce((a, b) => { return a + b }, 0) * 100) + "%";
-			}
-		},
-	},
-	yaxis: {
-		reversed: true,
 	}
 }));
 
