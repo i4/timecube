@@ -5,15 +5,15 @@
 				href="#"
 				class="card-title dropdown-toggle"
 				role="button"
-				id="week-heatmap-dropdown"
+				id="year-heatmap-dropdownx"
 				data-toggle="dropdown"
 				aria-haspopup="true"
 				aria-expanded="false"
-			>Wöchentliche Verteilung</a>
+			>Jahresüberblick</a>
 			<div
 				class="dropdown-menu"
-				id="week-heatmap-dropdown-set"
-				aria-labelledby="week-heatmap-dropdown"
+				id="year-heatmap-dropdown-set"
+				aria-labelledby="year-heatmap-dropdown"
 			>
 				<a
 					href="#"
@@ -57,7 +57,7 @@ interface CategoryInfo {
 		VueApexCharts
 	}
 })
-export default class WeekHeatmapPanel extends Vue {
+export default class YearHeatmapPanel extends Vue {
 	private selectedSid: BehaviorSubject<number> = new BehaviorSubject(NaN);
 	private categories: CategoryInfo[] = [];
 	private options: any = {};
@@ -76,107 +76,102 @@ export default class WeekHeatmapPanel extends Vue {
 	}
 
 	dateChanged(dateRange: DateRange, series: Series[], sid: number) {
-		this.options = this.generateWeekHeatmap(
-			series,
-			dateRange.start,
-			dateRange.end,
-			sid,
-			{
-				chart: {
-					height: 350,
-					type: "heatmap",
-					toolbar: {
-						show: false
-					}
-				},
-				title: {
-					align: "center",
-					floating: true,
-					style: {}
-				},
-				dataLabels: {
-					enabled: false
-				},
+		this.options = this.generateYearHeatmap(series, sid, {
+			chart: {
+				height: 350,
+				type: "heatmap",
+				toolbar: {
+					show: false
+				}
+			},
+			title: {
+				align: "center",
+				floating: true,
+				style: {}
+			},
+			dataLabels: {
+				enabled: false
+			},
 
-				tooltip: {
-					y: {
-						formatter: this.formatHour
-					},
-					x: {
-						show: true
-					}
+			tooltip: {
+				y: {
+					formatter: this.formatHour
+				},
+				x: {
+					show: true
 				}
 			}
-		);
+		});
 	}
-	generateWeekHeatmap(
-		data: Series[],
-		start: Moment,
-		end: Moment,
-		sid = NaN,
-		options = {},
-		hourStep = 2
-	) {
+
+	generateYearHeatmap(data: Series[], sid = NaN, options = {}) {
 		let series = data.findIndex(s => s.sid === sid);
 		if (series < 0) {
 			series = NaN;
 		}
-		options.title.text = isNaN(series) ? "Gesamt" : data[series].task;
+		options.title.text = isNaN(series)
+			? "Gesamt"
+			: data[series].task;
 		options.title.style.color = isNaN(series)
 			? "#222222"
 			: data[series].color;
 		options.colors = [isNaN(series) ? "#222222" : data[series].color];
 		options.series = [];
 
-		var result: number[][] = [];
+		var result = [];
+		var nowTime = Date.now();
+		var now = new Date(nowTime);
+		var start = new Date(nowTime);
+		start.setHours(0, 0, 0, 0);
+		start.setFullYear(start.getFullYear() - 1);
+		var dayTime = 24 * 60 * 60 * 1000;
+		var days = Math.ceil((now.getTime() - start.getTime()) / dayTime);
 
-		for (let j = 0; j < 24 / hourStep; j++) {
-			var a = j * hourStep;
-			options.series[j] = {
-				name: a + " – " + (a + hourStep) + " Uhr",
-				data: []
-			};
-			result[j] = [];
-			for (let i = 0; i < 7; i++) result[j][i] = 0;
-		}
-
-		for (let i = 0; i < data.length; i++) {
+		for (var i = 0; i < data.length; i++) {
 			if (
 				(isNaN(series) && data[i].hide) ||
 				(!isNaN(series) && series != i)
-			) {
+			)
 				continue;
-			}
-
-			for (let j = 0; j < data[i].data.length; j++) {
-				var e = data[i].data[j];
-				if (e[1] >= start.unix() && e[0] <= end.unix()) {
-					var t = new Date(e[1] * 1000);
-					var f = new Date(Math.max(e[0], start.unix()) * 1000);
-					while (t != null) {
-						var slot = Math.floor(f.getHours() / hourStep);
-						var x = new Date(
+			for (var j = 0; j < data[i].data.length; j++) {
+				let a = data[i].data[j];
+				let t = new Date(a[1] * 1000);
+				if (t.getTime() > start.getTime()) {
+					var f = new Date(Math.max(a[0] * 1000, start.getTime()));
+					let e: Date = new Date(
+						f.getFullYear(),
+						f.getMonth(),
+						f.getDate(),
+						23,
+						59,
+						59,
+						1000
+					);
+					while (e != null) {
+						e = new Date(
 							f.getFullYear(),
 							f.getMonth(),
 							f.getDate(),
-							(slot + 1) * hourStep,
-							0,
-							0,
-							0
+							23,
+							59,
+							59,
+							1000
 						);
-						var dow = f.getDay();
-						if (x > t) {
-							result[slot][dow] += t.getTime() - f.getTime();
+						var d = Math.floor(
+							(e.getTime() - start.getTime()) / dayTime
+						);
+						if (isNaN(result[d])) result[d] = 0;
+						if (e > t) {
+							result[d] += t.getTime() - f.getTime();
 							break;
 						} else {
-							result[slot][dow] += x.getTime() - f.getTime();
-							f = x;
+							result[d] += e.getTime() - f.getTime();
+							f = e;
 						}
 					}
 				}
 			}
 		}
-
 		var monthName = [
 			"Januar",
 			"Februar",
@@ -215,20 +210,37 @@ export default class WeekHeatmapPanel extends Vue {
 			"Samstag"
 		];
 		var weekdayShort = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
-
-		for (var j = 0; j < 24 / hourStep; j++) {
-			for (var i = 0; i < 7; i++) {
-				var d = (1 + i) % 7;
-				options.series[j].data.push({
-					x: weekdayName[d],
-					y: isNaN(result[j][d])
-						? 0
-						: Math.round((result[j][d] / 3600000) * 100) / 100
-				});
-			}
+		for (var k = 0; k < 7; k++) {
+			options.series[(14 - k) % 7] = {
+				name: weekdayName[k],
+				data: []
+			};
+		}
+		for (var l = 0; start < now; l++) {
+			options.series[(8 - start.getDay()) % 7].data.push({
+				x: "KW" + moment(start).week() + " " + start.getFullYear(),
+				y: isNaN(result[l])
+					? 0
+					: Math.round((result[l] / 3600000) * 100) / 100
+			});
+			start.setDate(start.getDate() + 1);
 		}
 
 		return options;
+	}
+
+	accumulateSeries(s: Series, start: Moment, end: Moment) {
+		var sum = 0;
+		for (var j = 0; j < s.data.length; j++) {
+			var entry = s.data[j];
+			if (start.unix() <= entry[1] && end.unix() >= entry[0]) {
+				sum +=
+					Math.min(entry[1], end.unix()) -
+					Math.max(entry[0], start.unix());
+			}
+		}
+		// We want the result in hours, not seconds
+		return Math.round((sum / 3600) * 100) / 100;
 	}
 
 	accumulateRange(data: Series[], start: Moment, end: Moment) {
@@ -248,19 +260,7 @@ export default class WeekHeatmapPanel extends Vue {
 
 		return result;
 	}
-	accumulateSeries(s: Series, start: Moment, end: Moment) {
-		var sum = 0;
-		for (var j = 0; j < s.data.length; j++) {
-			var entry = s.data[j];
-			if (start.unix() <= entry[1] && end.unix() >= entry[0]) {
-				sum +=
-					Math.min(entry[1], end.unix()) -
-					Math.max(entry[0], start.unix());
-			}
-		}
-		// We want the result in hours, not seconds
-		return Math.round((sum / 3600) * 100) / 100;
-	}
+
 	formatHourShort(val) {
 		return Math.round(val) + "h";
 	}
