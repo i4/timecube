@@ -53,29 +53,7 @@
 
 				<div class="row">
 					<div class="col-md-6 mt-3 mb-3">
-						<div class="card">
-							<div class="card-body">
-								<a
-									href="#"
-									class="card-title dropdown-toggle"
-									role="button"
-									id="overview-total-dropdown"
-									data-toggle="dropdown"
-									aria-haspopup="true"
-									aria-expanded="false"
-								>Tagesübersicht</a>
-								<div
-									class="dropdown-menu"
-									id="overview-total-dropdown-set"
-									aria-labelledby="overview-total-dropdown"
-								>
-									<a class="dropdown-item" href="javascript:setOverviewTotalStackType('single');">Einzeln</a>
-									<a class="dropdown-item" href="javascript:setOverviewTotalStackType('stacked');">Gestapelt</a>
-									<a class="dropdown-item" href="javascript:setOverviewTotalStackType('percent');">Prozentual</a>
-								</div>
-								<div id="chart-overview-total"></div>
-							</div>
-						</div>
+						<overview-total-panel />
 					</div>
 					<div class="col-md-6 mt-3 mb-3">
 						<div class="card">
@@ -145,6 +123,8 @@ import SumPiePanel from './components/panels/SumPiePanel.vue';
 import CategoryPanel from './components/panels/CategoryPanel.vue';
 import WorkPanel from './components/panels/work-panel.vue';
 import SumBarPanel from './components/panels/sum-bar-panel.vue';
+import WeekHeatmapPanel from './components/panels/week-heatmap-panel.vue';
+import OverviewTotalPanel from './components/panels/overview-total-panel.vue';
 import moment from "moment";
 import Apex from "apexcharts";
 import ApexCharts from "apexcharts";
@@ -152,7 +132,6 @@ require("daterangepicker");
 
 import "daterangepicker/daterangepicker.css";
 import "apexcharts/dist/apexcharts.css";
-import WeekHeatmapPanel from './components/panels/week-heatmap-panel.vue';
 
 Vue.component('date-range-picker', DateRangePicker);
 Vue.component('cube-panel', CubePanel);
@@ -161,6 +140,7 @@ Vue.component('category-panel', CategoryPanel);
 Vue.component('work-panel', WorkPanel);
 Vue.component('sum-bar-panel', SumBarPanel);
 Vue.component('week-heatmap-panel', WeekHeatmapPanel);
+Vue.component('overview-total-panel', OverviewTotalPanel);
 
 
 window.moment = moment;

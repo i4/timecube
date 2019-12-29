@@ -142,60 +142,60 @@ services.series.setSeries(data.series);
 $('#year-heatmap-dropdown-set').append('<div class="dropdown-divider"></div><a class="dropdown-item" href="javascript:updateCatYearHeatmap(NaN);"><b>Gesamt</b></a>');
 
 
-var chartOverviewTotal = renderChart("chart-overview-total", generateDayTimeBar(data, startRange, endRange, {
-	chart: {
-		height: 350,
-		type: 'bar',
-		stacked: true,
-		stackType: 'normal',
-		toolbar: {
-			show: true,
-			tools: {
-				download: false,
-			}
-		},
-		zoom: {
-			enabled: true
-		},
-	},
-	plotOptions: {
-		bar: {
-			horizontal: false,
-			endingShape: 'flat',
-			distributed: false,
-		},
-	},
-	yaxis: {
-		max: 24,
-		labels: {
-			formatter: formatHourShort,
-		},
-	},
-	xaxis: {
-		type: 'datetime',
-		min: minTime * 1000,
-		max: maxTime * 1000,
-		labels: {
-			datetimeFormatter: {
-				year: 'yyyy',
-				month: 'MMMM \'yy',
-				day: 'dd. MMMM',
-				hour: 'HH:mm'
-			}
-		}
-	},
-	dataLabels: {
-		enabled: false,
-	},
-	legend: {
-		position: 'top',
-	},
-	tooltip: {
-		x: {
-			format: 'd. MMMM yyyy',
-		},
-	}
-}));
+// var chartOverviewTotal = renderChart("chart-overview-total", generateDayTimeBar(data, startRange, endRange, {
+// 	chart: {
+// 		height: 350,
+// 		type: 'bar',
+// 		stacked: true,
+// 		stackType: 'normal',
+// 		toolbar: {
+// 			show: true,
+// 			tools: {
+// 				download: false,
+// 			}
+// 		},
+// 		zoom: {
+// 			enabled: true
+// 		},
+// 	},
+// 	plotOptions: {
+// 		bar: {
+// 			horizontal: false,
+// 			endingShape: 'flat',
+// 			distributed: false,
+// 		},
+// 	},
+// 	yaxis: {
+// 		max: 24,
+// 		labels: {
+// 			formatter: formatHourShort,
+// 		},
+// 	},
+// 	xaxis: {
+// 		type: 'datetime',
+// 		min: minTime * 1000,
+// 		max: maxTime * 1000,
+// 		labels: {
+// 			datetimeFormatter: {
+// 				year: 'yyyy',
+// 				month: 'MMMM \'yy',
+// 				day: 'dd. MMMM',
+// 				hour: 'HH:mm'
+// 			}
+// 		}
+// 	},
+// 	dataLabels: {
+// 		enabled: false,
+// 	},
+// 	legend: {
+// 		position: 'top',
+// 	},
+// 	tooltip: {
+// 		x: {
+// 			format: 'd. MMMM yyyy',
+// 		},
+// 	}
+// }));
 
 var chartOverviewSum = renderChart("chart-overview-sum", generateDaySum(data, startRange, endRange,  {
 	chart: {
