@@ -56,28 +56,7 @@
 						<overview-total-panel />
 					</div>
 					<div class="col-md-6 mt-3 mb-3">
-						<div class="card">
-							<div class="card-body">
-								<a
-									href="#"
-									class="card-title dropdown-toggle"
-									role="button"
-									id="overview-sum-dropdown"
-									data-toggle="dropdown"
-									aria-haspopup="true"
-									aria-expanded="false"
-								>Verlauf</a>
-								<div
-									class="dropdown-menu"
-									id="overview-sum-dropdown-set"
-									aria-labelledby="overview-sum-dropdown"
-								>
-									<a class="dropdown-item" href="javascript:setOverviewSumStackType('single');">Einzeln</a>
-									<a class="dropdown-item" href="javascript:setOverviewSumStackType('stacked');">Gestapelt</a>
-								</div>
-								<div id="chart-overview-sum"></div>
-							</div>
-						</div>
+						<overview-sum-panel />
 					</div>
 				</div>
 
@@ -125,6 +104,7 @@ import WorkPanel from './components/panels/work-panel.vue';
 import SumBarPanel from './components/panels/sum-bar-panel.vue';
 import WeekHeatmapPanel from './components/panels/week-heatmap-panel.vue';
 import OverviewTotalPanel from './components/panels/overview-total-panel.vue';
+import OverviewSumPanel from './components/panels/overview-sum-panel.vue';
 import moment from "moment";
 import Apex from "apexcharts";
 import ApexCharts from "apexcharts";
@@ -141,6 +121,7 @@ Vue.component('work-panel', WorkPanel);
 Vue.component('sum-bar-panel', SumBarPanel);
 Vue.component('week-heatmap-panel', WeekHeatmapPanel);
 Vue.component('overview-total-panel', OverviewTotalPanel);
+Vue.component('overview-sum-panel', OverviewSumPanel);
 
 
 window.moment = moment;

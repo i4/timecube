@@ -95,10 +95,6 @@ export default class OverviewTotalPanel extends Vue {
 				},
 				xaxis: {
 					type: "datetime",
-					// min: moment()
-					// 	.subtract(1, "year")
-					// 	.unix() * 1000,
-					// max: moment().unix() * 1000,
 					labels: {
 						datetimeFormatter: {
 							year: "yyyy",
@@ -137,8 +133,8 @@ export default class OverviewTotalPanel extends Vue {
 				options.chart.stacked = false;
 				options.chart.stackType = "normal";
 				options.yaxis.max = function(max) {
-							return max;
-						};
+					return max;
+				};
 				options.yaxis.labels = {
 					formatter: this.formatHourShort
 				};
