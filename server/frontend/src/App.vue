@@ -65,12 +65,7 @@
 					</div>
 
 					<div class="col-md-6 mt-3 mb-3">
-						<div class="card">
-							<div class="card-body">
-								<a class="card-title">Summe</a>
-								<div id="chart-sum-bar"></div>
-							</div>
-						</div>
+						<sum-bar-panel />
 					</div>
 				</div>
 
@@ -167,6 +162,7 @@ import CubePanel from './components/panels/CubePanel.vue';
 import SumPiePanel from './components/panels/SumPiePanel.vue';
 import CategoryPanel from './components/panels/CategoryPanel.vue';
 import WorkPanel from './components/panels/work-panel.vue';
+import SumBarPanel from './components/panels/sum-bar-panel.vue';
 import moment from "moment";
 import Apex from "apexcharts";
 import ApexCharts from "apexcharts";
@@ -180,6 +176,7 @@ Vue.component('cube-panel', CubePanel);
 Vue.component('sum-pie-panel', SumPiePanel);
 Vue.component('category-panel', CategoryPanel);
 Vue.component('work-panel', WorkPanel);
+Vue.component('sum-bar-panel', SumBarPanel);
 
 
 window.moment = moment;

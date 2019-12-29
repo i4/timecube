@@ -25,7 +25,6 @@ function refreshCharts(startRange, endRange){
 	// chartOverviewTotal.updateOptions(generateDayTimeBar(data, startRange, endRange));
 	// chartOverviewSum.updateOptions(generateDaySum(data, startRange, endRange));
 	// chartWeekHeatMap.updateOptions(generateWeekHeatmap(data, startRange, endRange));
-	// chartSumBar.updateOptions(generateBar(data, startRange, endRange));
 }
 
 function setOverviewTotalStackType(type){
@@ -306,37 +305,6 @@ var chartWeekHeatMap = renderChart("chart-week-heatmap", generateWeekHeatmap(dat
 	},
 	yaxis: {
 		reversed: true,
-	}
-}));
-
-var chartSumBar = renderChart("chart-sum-bar", generateBar(data, startRange, endRange, {
-	chart: {
-		height: 350,
-		type: 'bar',
-		toolbar: {
-			show: false
-		}
-	},
-	colors: [],
-	plotOptions: {
-		bar: {
-			distributed: true,
-			horizontal: true,
-		},
-	},
-	dataLabels: {
-		enabled: true,
-		formatter: formatHour,
-	},
-	xaxis : {
-		title : {
-			text : "Stunden"
-		},
-	},
-	tooltip: {
-		y: {
-			formatter: formatHourMinute,
-		},
 	}
 }));
 
