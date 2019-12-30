@@ -3,6 +3,8 @@ import { faBed, faCalendar, faCaretDown, faChalkboardTeacher, faCog, faCube, faF
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap.bundle.js";
+import "daterangepicker/daterangepicker.css";
+import "apexcharts/dist/apexcharts.css";
 import $ from 'jquery';
 import Vue from "vue";
 import App from "./App.vue";

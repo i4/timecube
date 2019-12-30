@@ -22,53 +22,8 @@
 		</nav>
 
 		<div class="content-area">
-			<div class="container-fluid">
-				<div class="row">
-					<div class="col-md-4 mt-3 mb-3">
-						<cube-panel />
-					</div>
-
-					<div class="col-md-3 mt-3 mb-3">
-						<work-panel />
-					</div>
-
-					<div class="col-md-5 mt-3 mb-3">
-						<week-heatmap-panel />
-					</div>
-				</div>
-
-				<div class="row">
-					<div class="col-md-3 mt-3 mb-3">
-						<category-panel />
-					</div>
-
-					<div class="col-md-3 mt-3 mb-3">
-						<sum-pie-panel />
-					</div>
-
-					<div class="col-md-6 mt-3 mb-3">
-						<sum-bar-panel />
-					</div>
-				</div>
-
-				<div class="row">
-					<div class="col-md-6 mt-3 mb-3">
-						<overview-total-panel />
-					</div>
-					<div class="col-md-6 mt-3 mb-3">
-						<overview-sum-panel />
-					</div>
-				</div>
-
-				<div class="row">
-					<div class="col mt-3 mb-3">
-						<year-heatmap-panel />
-					</div>
-				</div>
-			</div>
+			<Dashboard />
 		</div>
-
-		<Dashboard />
 
 		<Footer />
 	</div>
@@ -78,30 +33,6 @@
 import { Component, Vue } from "vue-property-decorator";
 import Dashboard from "./components/Dashboard.vue";
 import Footer from "./components/Footer.vue";
-import DateRangePicker from "./components/DateRangePicker.vue";
-import CubePanel from "./components/panels/CubePanel.vue";
-import SumPiePanel from "./components/panels/SumPiePanel.vue";
-import CategoryPanel from "./components/panels/CategoryPanel.vue";
-import WorkPanel from "./components/panels/work-panel.vue";
-import SumBarPanel from "./components/panels/sum-bar-panel.vue";
-import WeekHeatmapPanel from "./components/panels/week-heatmap-panel.vue";
-import OverviewTotalPanel from "./components/panels/overview-total-panel.vue";
-import OverviewSumPanel from "./components/panels/overview-sum-panel.vue";
-import YearHeatmapPanel from "./components/panels/year-heatmap-panel.vue";
-
-import "daterangepicker/daterangepicker.css";
-import "apexcharts/dist/apexcharts.css";
-
-Vue.component("date-range-picker", DateRangePicker);
-Vue.component("cube-panel", CubePanel);
-Vue.component("sum-pie-panel", SumPiePanel);
-Vue.component("category-panel", CategoryPanel);
-Vue.component("work-panel", WorkPanel);
-Vue.component("sum-bar-panel", SumBarPanel);
-Vue.component("week-heatmap-panel", WeekHeatmapPanel);
-Vue.component("overview-total-panel", OverviewTotalPanel);
-Vue.component("overview-sum-panel", OverviewSumPanel);
-Vue.component("year-heatmap-panel", YearHeatmapPanel);
 
 @Component({
 	components: {
