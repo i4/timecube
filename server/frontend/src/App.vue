@@ -88,8 +88,6 @@ import WeekHeatmapPanel from "./components/panels/week-heatmap-panel.vue";
 import OverviewTotalPanel from "./components/panels/overview-total-panel.vue";
 import OverviewSumPanel from "./components/panels/overview-sum-panel.vue";
 import YearHeatmapPanel from "./components/panels/year-heatmap-panel.vue";
-import moment from "moment";
-require("daterangepicker");
 
 import "daterangepicker/daterangepicker.css";
 import "apexcharts/dist/apexcharts.css";
@@ -104,8 +102,6 @@ Vue.component("week-heatmap-panel", WeekHeatmapPanel);
 Vue.component("overview-total-panel", OverviewTotalPanel);
 Vue.component("overview-sum-panel", OverviewSumPanel);
 Vue.component("year-heatmap-panel", YearHeatmapPanel);
-
-window.moment = moment;
 
 @Component({
 	components: {
