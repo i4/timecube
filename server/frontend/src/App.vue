@@ -122,7 +122,6 @@ export default class App extends Vue {
 		this.loadScript("data.js");
 		this.loadScript("js/config.js");
 		this.loadScript("js/helper.js");
-		this.loadScript("js/charts.js");
 	}
 
 	loadScript(url: string): void {
