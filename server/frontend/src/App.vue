@@ -89,8 +89,6 @@ import OverviewTotalPanel from "./components/panels/overview-total-panel.vue";
 import OverviewSumPanel from "./components/panels/overview-sum-panel.vue";
 import YearHeatmapPanel from "./components/panels/year-heatmap-panel.vue";
 import moment from "moment";
-import Apex from "apexcharts";
-import ApexCharts from "apexcharts";
 require("daterangepicker");
 
 import "daterangepicker/daterangepicker.css";
@@ -108,8 +106,6 @@ Vue.component("overview-sum-panel", OverviewSumPanel);
 Vue.component("year-heatmap-panel", YearHeatmapPanel);
 
 window.moment = moment;
-window.Apex = Apex;
-window.ApexCharts = ApexCharts;
 
 @Component({
 	components: {
