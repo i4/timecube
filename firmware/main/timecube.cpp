@@ -1,8 +1,9 @@
 // Copyright (c) 2019 Laura Lawniczak, Christian Eichler, Bernhard Heinloth
 // SPDX-License-Identifier: AGPL-3.0-only
 
+#include "config.h"
+
 #include <Arduino.h>
-#include <WiFi.h>
 #include <esp_adc_cal.h>
 #include <esp_wifi.h>
 #include <esp_wpa2.h>
@@ -11,9 +12,20 @@
 #include <driver/rtc_io.h>
 #include <driver/adc.h>
 
-#include "config.h"
+#if ENABLE_HTTPS == 1
+	#include <ssl_client.h>
+	#include <WiFiClientSecure.h>
+
+	WiFiClientSecure client;
+#else
+	#include <WiFi.h>
+
+	WiFiClient client;
+#endif
+
 #include "accelerometer.h"
 #include "timelog.h"
+
 
 #ifdef SERIAL_DEBUG
 	#define SDBG(MSG) Serial.print(MSG)
@@ -51,7 +63,6 @@ RTC_DATA_ATTR unsigned bug_counter = 0;
 
 RTC_DATA_ATTR bool wifi_active = false;
 
-
 static Accelerometer accel = Accelerometer(ACCEL_CS_PIN);
 static hw_timer_t *timer = nullptr;
 
@@ -79,6 +90,10 @@ void setup() {
 		adc_power_off();
 	}
 
+	#if ENABLE_HTTPS == 1
+		client.setCACert(ROOT_CERTIFICATE);
+	#endif
+	client.setTimeout(1500);
 
 	// Light blue LED (on FireBeetle)
 	pinMode(STATUS_LED_PIN, OUTPUT);
@@ -368,7 +383,7 @@ static bool uploadData() {
 		const size_t content_length = (timelog_entry == 0) ? 15 : (17 + timelog_entry * 9);
 		#ifdef SERIAL_DEBUG
 		{
-			SDBGF("Trying to send %d timelog entries (Content-Length: %d Bytes) to " SYNC_HTTP_HOST "\n", timelog_entry, content_length);
+			SDBGF("Trying to send %d timelog entries (Content-Length: %d Bytes) to " SYNC_HOST "\n", timelog_entry, content_length);
 			SDBGF(" MAC: %04X%08X\n",(uint16_t)(mac>>32), (uint32_t)mac);
 			SDBGF(" Battery: %d%%\n", battery);
 			SDBGF(" Current Time: %s (UNIX Timestamp: %ld)\n", formatTime(now), now);
@@ -379,11 +394,9 @@ static bool uploadData() {
 		}
 		#endif
 
-		WiFiClient client;
-		client.setTimeout(1500);
-		if(client.connect(SYNC_HTTP_HOST, 80)) {
-			client.printf("POST /%04X%08X/upload HTTP/1.1\r\n", (uint16_t)(mac>>32), (uint32_t)mac);
-			client.print ("Host: " SYNC_HTTP_HOST "\r\n");
+		if(client.connect(SYNC_HOST, SYNC_PORT)) {
+			client.printf("POST " SYNC_CONTEXT "%04X%08X/upload HTTP/1.1\r\n", (uint16_t)(mac>>32), (uint32_t)mac);
+			client.print ("Host: " SYNC_HOST "\r\n");
 			client.print ("User-Agent: i4timecube\r\n");
 			client.print ("Content-Type: application/x-www-form-urlencoded\r\n");
 			client.printf("Content-Length: %d\r\n\r\n", content_length);
@@ -396,7 +409,7 @@ static bool uploadData() {
 				}
 			}
 
-			SDBGLN(" Response from " SYNC_HTTP_HOST ":");
+			SDBGLN(" Response from " SYNC_HOST ":");
 			for (int t = 0; t<20 && client.connected();t++) {
 				String line = client.readStringUntil('\n');
 				SDBGF("  [line %d] %s\n", t, line.c_str());
@@ -407,8 +420,10 @@ static bool uploadData() {
 					break;
 				}
 			}
-		} else
+		} else {
 			SDBGLN("Connection failed");
+			return false;
+		}
 	}
 	return false;
 }
