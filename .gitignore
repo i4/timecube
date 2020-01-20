@@ -1,2 +1,23 @@
 server/config.php
 sketch_timecube/config.h
+
+# frontend - npm
+/server/frontend/.DS_Store
+/server/frontend/node_modules
+/server/frontend/dist
+
+# frontend - local env files
+/server/frontend/.env.local
+/server/frontend/.env.*.local
+
+# frontend - Log files
+/server/frontend/npm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
