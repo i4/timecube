@@ -25,7 +25,7 @@ Anleitung
 ---------
 
   * [Detaillierte und bebilderte Montageanleitung](MONTAGE.md)
-  * [Anleitung zum Bauen der Firmware für den Würfel](INSTALL.md)
+  * [Anleitung zum Bauen der Firmware für den Würfel und die Einrichtung des Webfrontends](INSTALL.md)
 
 
 Lizenz

@@ -109,3 +109,47 @@ Auch hier muss zuerst eine Konfiguration (im Beispiel `config.h` im aktuellen Ve
 wozu die Vorlage im Repo unter `firmware/main/example-config.h` verwendet werden kann.
 
     docker run --rm -it -v $(pwd)/config.h:/timecube/firmware/main/config.h --device=/dev/ttyUSB0 inf4/timecube
+
+
+
+Webfrontend
+===========
+
+Der Zeitwürfel läd die Daten regelmäßig über das WLAN an das Frontend.
+Dafür wird ein Webserver mit PHP und einer PostgreSQL Datenbank benötigt (kann aber leicht zu einer anderen Datenbank geändert werden, siehe `server/www/index.php:18`).
+Die Zugangsdaten werden in `server/www/config.php` konfiguriert, ein Beispiel ist unter `server/example-config.php` zu finden.
+
+
+Lokal
+-----
+
+Das Frontend des Zeitwürfels kann einfach in eine bestehende Serverinfrastruktur integriert werden.
+
+### Webserver
+
+Es muss sichergestellt werden, dass die Submodule im Repo geladen sind:
+
+    git submodule init
+    git submodule update
+
+Danach muss lediglich noch das Verzeichnis `server/www/` über die Webserverkonfiguration zugänglich gemacht werden.
+
+
+### Datenbank
+
+Eine neue Datenbank muss erstellt werden, das Schema ist unter `server/database.sql` zu finden.
+Um neue Benutzer anzulegen, wird die MAC Adresse des Würfels benötigt (kann z.B. über eine serielle Konsole beim verbundenen Zeitwürfel ausgelesen werden), die Datei `server/insert_new_user.sql` zeigt den dafür notwendigen SQL Query.
+
+
+Docker
+------
+
+Alternativ kann das ganze Webfrontend (Webserver und Datenbank) auch in Docker gestartet werden, dazu gibt es mit `server/docker_compose.yml` eine vorgegeben Spezifikation, welche einfach gestartet werden kann:
+
+    cd server
+    docker-compose up -d
+
+und schon kann über http://localhost/ zugegriffen werden
+(für den Beispielbenutzer `chris` einfach http://localhost/chris/ aufrufen)
+
+Dieser Dienst muss nun noch über das Netzwerk erreichbar sein, die Würfelkonfiguration muss den dazu passenden Host haben.
