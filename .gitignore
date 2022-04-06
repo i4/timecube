@@ -1,2 +1,6 @@
+firmware/build/
+firmware/esp-idf/
+firmware/xtensa-esp32-elf/
+firmware/main/config.h
 server/config.php
 sketch_timecube/config.h
