@@ -14,6 +14,7 @@ firmware:
     - sed -i '/^#include <protocomm_ble.h>$/d' $IDF_PATH/components/wifi_provisioning/include/wifi_provisioning/scheme_ble.h
     - wget -qO- https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-97-gc752ad5-5.2.0.tar.gz | tar xvz
     - export PATH="$PATH:$(readlink -f xtensa-esp32-elf/bin)"
+    - cp firmware/main/example-config.h firmware/main/config.h
   script:
     - mkdir -p firmware/build
     - cd firmware/build
