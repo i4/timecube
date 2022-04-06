@@ -1,4 +1,5 @@
 // Verwende serielle Debugausgabe mit gegebener Baudrate
+// (falls auskommentiert wird ohne Debugausgabe übersetzt)
 #define SERIAL_DEBUG 115200
 
 // Deine WLAN Zugangsdaten
@@ -16,7 +17,7 @@
 #define WLAN_RECONNECT_TRIES 60
 
 // Server fuer Upload
-#define SYNC_HTTP_HOST "i4time.cs.fau.de"
+#define SYNC_HOST "i4time.cs.fau.de"
 // Port fuer die Verbindung
 #define SYNC_PORT 443
 // Context auf dem Webserver
