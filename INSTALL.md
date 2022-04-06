@@ -86,3 +86,26 @@ Hat man mehr als einen ESP32 angeschlossen, dann kann/muss man mittel Umgebungsv
 `ESPPORT=/dev/ttyUSB5 make flash`
 
 
+Docker (mit ESP IDF)
+--------------------
+
+Wer weder *Arduino* noch das *Espressif IoT Development Framework* installieren will, kann auch alternativ Docker verwenden.
+
+
+### Bauen des Docker Abbildes (optional)
+
+Wer das Docker Image selbst bauen will, kann dies mittels
+
+    docker build -t inf4/timecube .
+
+im Hauptverzeichnis des Repos machen.
+
+Alternativ ist es aber auch fertig auf [Docker Hub](https://hub.docker.com/r/inf4/timecube/) verfügbar und wird im nachfolgenden Schritt automatisch geladen.
+
+
+### Bauen der Firmware und Flashen des Zeitwürfels
+
+Auch hier muss zuerst eine Konfiguration (im Beispiel `config.h` im aktuellen Verzeichnis) erstellt werden,
+wozu die Vorlage im Repo unter `firmware/main/example-config.h` verwendet werden kann.
+
+    docker run --rm -it -v $(pwd)/config.h:/timecube/firmware/main/config.h --device=/dev/ttyUSB0 inf4/timecube
