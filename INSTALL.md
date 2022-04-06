@@ -71,7 +71,7 @@ Auf einem debianoiden Linux mit aktueller Version können die benötigten Kompon
 
 ### Bauen der Firmware
 
-Nach der Vorbereitung im `timecube`-Verzeichnis folgende Schritte ausführen:
+Nach der Vorbereitung im `firmware`-Verzeichnis folgende Schritte ausführen:
 
     mkdir build
     cd build
