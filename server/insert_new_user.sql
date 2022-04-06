@@ -38,7 +38,7 @@ WITH data (     name       ,      email         ,      alias     ,      mac     
 ), addside6 AS (
 	INSERT INTO cubesides (mac, side, category) SELECT mac, 6, id FROM addcat6 CROSS JOIN data
 )
-INSERT INTO connection (mac, side, voltage, time)
+INSERT INTO connection (mac, id, voltage, time)
 SELECT mac, id, 0, extract(epoch from now()) FROM data CROSS JOIN addside0;
 
 COMMIT;

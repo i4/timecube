@@ -1,8 +1,8 @@
 <?php
 
-$DBHOST="localhost";
+$DBHOST="db";
 $DBNAME="timelog";
-$DBUSER="USER";
-$DBPASS="PASS";
+$DBUSER="postgres";
+$DBPASS="YOUR_PASSWORD!";
 
 ?>

@@ -1,0 +1,38 @@
+version: '3.7'
+services:
+    web:
+        image: inf4/timecube
+        volumes:
+            # Adjust domain
+            - ./nginx.conf:/etc/nginx/sites-enabled/default
+            # Adjust database user and password
+            - ./www/config.php:/timecube/server/www/config.php
+        ports:
+            - 80:80
+        restart: always
+        command: sh -c '/etc/init.d/php7.4-fpm start ; nginx -g "daemon off;"'
+        depends_on:
+            - db
+    db:
+        image: postgres:10.5
+        restart: always
+        environment:
+          - PGUSER=postgres
+          # must be identical to www/config.php (and credentials should be changed!)
+          - POSTGRES_DB=timelog
+          - POSTGRES_USER=timelog
+          - POSTGRES_PASSWORD=YOUR_PASSWORD!
+        ports:
+          - 5438:5432
+        volumes:
+          # lokal volume
+          - db:/var/lib/postgresql/data
+          # create the database tables
+          - ./docker.sql:/docker-entrypoint-initdb.d/0-docker.sql
+          # create the database tables
+          - ./database.sql:/docker-entrypoint-initdb.d/database.sql
+          # fill in user and timecube mac
+          - ./insert_new_user.sql:/docker-entrypoint-initdb.d/insert_new_user.sql
+volumes:
+  db:
+    driver: local
