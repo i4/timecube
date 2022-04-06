@@ -45,7 +45,8 @@ Folgende Komponenten werden benötigt:
 
 ### Vorbereitung
 
-Die Konfiguration in der Datei `firmware/main/config.h` muss angepasst werden.
+Die Konfiguration in der Datei `firmware/main/config.h` muss erstellt werden,
+dazu die Vorlage unter `firmware/main/example-config.h` verwenden.
 
 Auf einem debianoiden Linux mit aktueller Version können die benötigten Komponenten wie folgt installiert werden:
 
@@ -53,13 +54,16 @@ Auf einem debianoiden Linux mit aktueller Version können die benötigten Kompon
     git clone https://gitlab.cs.fau.de/heinloth/timecube.git
     cd timecube
     git submodule update --init --recursive
-    # Benötigte Pakete installeiren
+    # Benötigte Pakete installieren
     sudo apt-get install make git wget libncurses-dev flex bison gperf python python-pip python-setuptools python-serial python-click python-cryptography python-future python-pyparsing python-pyelftools cmake ninja-build ccache
     # ESP IDF Version 3.3 rekursiv auschecken
-    git clone --depth=1 --recursive --branch v3.3 https://github.com/espressif/esp-idf.git
+    cd firmware
+    git clone --depth=1 --recursive --branch v3.3.6 https://github.com/espressif/esp-idf.git
     export IDF_PATH="$(readlink -f esp-idf)"
-    # xtensa-esp32-Toolchain laden (URL von der linux-setup Webseite)
-    wget -qO- https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar xvz
+    # Bluetooth Abhängigkeitsproblem lösen (BLE wird nicht benötigt)
+    sed -i '/^#include <protocomm_ble.h>$/d' esp-idf/components/wifi_provisioning/include/wifi_provisioning/scheme_ble.h
+    # xtensa-esp32-Toolchain laden (URL von der [Linux-setup](https://docs.espressif.com/projects/esp-idf/en/release-v3.3/get-started/linux-setup.html) Webseite)
+    wget -qO- https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-97-gc752ad5-5.2.0.tar.gz | tar xvz
     export PATH="$PATH:$(readlink -f xtensa-esp32-elf/bin)"
 
 
