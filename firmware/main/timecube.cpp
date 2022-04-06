@@ -30,7 +30,7 @@
 #ifdef SERIAL_DEBUG
 	#define SDBG(MSG) Serial.print(MSG)
 	#define SDBGF(MSG, ...) Serial.printf(MSG, __VA_ARGS__)
-	#define SDBGLN(MSG) Serial.println(MSG)
+	#define SDBGLN(MSG) Serial.print(MSG "\r\n")
 #else
 	#define SDBG(MSG)
 	#define SDBGF(MSG, ...)
@@ -40,7 +40,7 @@
 
 static void        resetSystem();
 static void        gotoDeepSleep(unsigned long long wakeupTime, bool force = false);
-static bool        sync();
+static bool        syncData();
 static bool        uploadData();
 static bool        updateTime();
 static bool        wlanConnect();
@@ -76,7 +76,7 @@ void setup() {
 	// Wait 10 ms
 	delay(10);
 
-	SDBGF("Starting Watchdog (Bug Counter: %d)...\n", bug_counter);
+	SDBGF("Starting Watchdog (Bug Counter: %d)...\r\n", bug_counter);
 	#define DEINIT_TIMEOUT (60 * 1000 * 1000)
 	timer = timerBegin(0, 80, true);
 	timerAttachInterrupt(timer, &resetSystem, true);
@@ -103,7 +103,7 @@ void setup() {
 	{
 		time_t now;
 		time(&now);
-		SDBGF("Wakeup at %s\n", formatTime(now));
+		SDBGF("Wakeup at %s\r\n", formatTime(now));
 	}
 
 	// Set up Accelerometer
@@ -127,7 +127,7 @@ void setup() {
 		case ESP_SLEEP_WAKEUP_EXT1:     SDBGLN("EXT1 (should not happen)");        break;
 		case ESP_SLEEP_WAKEUP_TOUCHPAD: SDBGLN("Touchpad (should not happen)");    break;
 		case ESP_SLEEP_WAKEUP_ULP:      SDBGLN("ULP (should not happen)");         break;
-		default : SDBGF("Unknown reason %d (should not happen)\n", wakeup_reason); break;
+		default : SDBGF("Unknown reason %d (should not happen)\r\n", wakeup_reason); break;
 	}
 
 	// Do we need an WLAN synchronization?
@@ -152,8 +152,8 @@ void setup() {
 
 	// do update
 	if(update) {
-		 SDBGF("Sync #%d\n", ++sync_counter);
-		 sync();
+		 SDBGF("Sync #%d\r\n", ++sync_counter);
+		 syncData();
 
 		 // New Timer Wakeup
 		 time(&now);
@@ -205,7 +205,7 @@ static uint8_t getBattery() {
 		// Battery voltage is 2x the voltage measured here
 		// due to an on-board voltage divider used for measurement
 		uint32_t voltage = 2 * esp_adc_cal_raw_to_voltage(rawval, &adc_chars);
-		SDBGF("  Battery Voltage: %dmV\n", voltage);
+		SDBGF("  Battery Voltage: %dmV\r\n", voltage);
 
 
 		if(voltage > BATTERY_MAX) {
@@ -215,9 +215,9 @@ static uint8_t getBattery() {
 		} else {
 			battery = (voltage - BATTERY_MIN) * 100 / (BATTERY_MAX - BATTERY_MIN);
 		}
-		SDBGF(" * Battery State from ADC: %d%%\n", battery);
+		SDBGF(" * Battery State from ADC: %d%%\r\n", battery);
 	} else {
-		SDBGF("Using Battery State from Previous Call: %d%%\n", battery);
+		SDBGF("Using Battery State from Previous Call: %d%%\r\n", battery);
 	}
 
 	return battery;
@@ -272,7 +272,7 @@ static bool checkSide(bool forceNewEntry) {
 		timestamp.set_side(side);
 
 		timelog[timelog_entry++] = timestamp;
-		SDBGF("Currently active side: %d\n", side);
+		SDBGF("Currently active side: %d\r\n", side);
 		return true;
 	}
 	return false;
@@ -363,7 +363,7 @@ static bool updateTime() {
 		// Update entries
 		uint32_t delta = new_ts - old_ts;
 
-		SDBGF("Updating timelog entries with new time (delta: %ds)\n", delta);
+		SDBGF("Updating timelog entries with new time (delta: %ds)\r\n", delta);
 		for (int i = 0; i < timelog_entry; i++) {
 			timelog[i].set_time(timelog[i].get_time() + delta);
 		}
@@ -383,13 +383,13 @@ static bool uploadData() {
 		const size_t content_length = (timelog_entry == 0) ? 15 : (17 + timelog_entry * 9);
 		#ifdef SERIAL_DEBUG
 		{
-			SDBGF("Trying to send %d timelog entries (Content-Length: %d Bytes) to " SYNC_HOST "\n", timelog_entry, content_length);
-			SDBGF(" MAC: %04X%08X\n",(uint16_t)(mac>>32), (uint32_t)mac);
-			SDBGF(" Battery: %d%%\n", battery);
-			SDBGF(" Current Time: %s (UNIX Timestamp: %ld)\n", formatTime(now), now);
+			SDBGF("Trying to send %d timelog entries (Content-Length: %d Bytes) to " SYNC_HOST "\r\n", timelog_entry, content_length);
+			SDBGF(" MAC: %04X%08X\r\n",(uint16_t)(mac>>32), (uint32_t)mac);
+			SDBGF(" Battery: %d%%\r\n", battery);
+			SDBGF(" Current Time: %s (UNIX Timestamp: %ld)\r\n", formatTime(now), now);
 			SDBGLN(" Data:");
 			for (int i = 0; i < timelog_entry; i++) {
-				SDBGF("  [%d] Side %d at %s (UNIX Timestamp: %ld)\n", i, timelog[i].get_side(), formatTime(timelog[i].get_time()), timelog[i].get_time());
+				SDBGF("  [%d] Side %d at %s (UNIX Timestamp: %ld)\r\n", i, timelog[i].get_side(), formatTime(timelog[i].get_time()), timelog[i].get_time());
 			}
 		}
 		#endif
@@ -412,7 +412,7 @@ static bool uploadData() {
 			SDBGLN(" Response from " SYNC_HOST ":");
 			for (int t = 0; t<20 && client.connected();t++) {
 				String line = client.readStringUntil('\n');
-				SDBGF("  [line %d] %s\n", t, line.c_str());
+				SDBGF("  [line %d] %s\r\n", t, line.c_str());
 				if(line == "HTTP/1.1 200 OK\r" || line == "HTTP/1.0 200 OK\r") {
 					return true;
 				}
@@ -428,14 +428,14 @@ static bool uploadData() {
 	return false;
 }
 
-static bool sync() {
+static bool syncData() {
 	wlanSetup();
 
 	if(!wlanConnect()) {
 		return false;
 	}
 
-	SDBGF("IP: %s\n", WiFi.localIP().toString().c_str());
+	SDBGF("IP: %s\r\n", WiFi.localIP().toString().c_str());
 	delay(WLAN_RECONNECT_DELAY);
 
 	bool ret = true;
@@ -460,7 +460,7 @@ static bool sync() {
 }
 
 static void gotoDeepSleep(unsigned long long wakeupTime, bool force) {
-	SDBGF("Preparing for Sleep #%d:\n", ++deep_sleep);
+	SDBGF("Preparing for Sleep #%d:\r\n", ++deep_sleep);
 
 	if(wifi_active && !force) {
 		SDBGLN(" * Powering down WiFi...");
@@ -493,7 +493,7 @@ static void resetSystem() {
 	SDBGLN("|~~~    BUG    ~~~|");
 	SDBGLN("-=================-");
 
-	SDBGF("[BUG %d] Watchdog triggered; Resetting System\n", bug_counter);
+	SDBGF("[BUG %d] Watchdog triggered; Resetting System\r\n", bug_counter);
 #ifdef SERIAL_DEBUG
 	Serial.flush();
 #endif
